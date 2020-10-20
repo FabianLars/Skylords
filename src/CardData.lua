@@ -458,6 +458,8 @@ end
 local function getArgs(frame)
     local t
     local res = {}
+    -- binding global 'next' to local var maximizes performance in standard lua; don't know about scribunto
+    local next = next
     if frame[1] or frame["name"] then
         t = frame
     elseif frame.args and (frame.args[1] or frame.args["name"]) then
@@ -484,6 +486,7 @@ local function getArgs(frame)
             end
         end
     end
+    if next(res) == nil then Error("Error (missing args): Check your input") end
     return res
 end
 
@@ -811,9 +814,6 @@ end
 ---@public
 function CardData.deck(frame)
     local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
-    end
 
     local res = mw.html.create("div"):cssText("display:flex;flex-wrap:wrap;")
     if args["maxperrow"] then
@@ -863,9 +863,6 @@ end
 ---@public
 function CardData.get(frame)
     local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
-    end
 
     local cardname = (args[2]:find("affini")) and args[1] or get.verified_name(args[1])
     local val = args[2]
@@ -917,9 +914,6 @@ end
 ---@public
 function CardData.has(frame)
     local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
-    end
 
     if has[args[2]] and has[args[2]](args[1]) then
         return true
@@ -936,9 +930,6 @@ end
 ---@public
 function CardData.icon(frame)
     local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
-    end
 
     local n, v = string.find(args[1], " (", 1, true)
     local name, _ = (n == nil and args[1] or string.sub(args[1], 1, (n or 0) - 1)), nil
@@ -999,9 +990,6 @@ end
 
 function CardData.infobox(frame)
     local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
-    end
 
     local vname, _, _ = get.verified_name(args[1])
     local abils = {}
@@ -1042,13 +1030,9 @@ end
 ---@public
 function CardData.list(frame)
     local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
-    end
 
     local list = get.list()
-    local div = args['ci'] == true and mw.html.create()
-            or mw.html.create("div"):addClass("list-of-all-cards"):css{
+    local div = args['ci'] == true and mw.html.create() or mw.html.create("div"):addClass("list-of-all-cards"):css{
         ["display"] = "flex",
         ["flex-wrap"] = "wrap",
         ["justify-content"] = "center"
@@ -1081,7 +1065,7 @@ end
 
 function CardData.map_drops(frame)
     local args = getArgs(frame)
-    if not args then return "Error (missing args): Check your input" end
+
     local res = get.map_drops(args[1], args[2])
     if args[3] == "list" then
         local res2 = mw.html.create('ul')
@@ -1171,9 +1155,6 @@ end
 ---@public
 function CardData.tooltip(frame)
     local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
-    end
 
     local name = args[1]--verifyName(args[1])
     local tooltip = mw.html.create("div"):cssText("display:flex;")
