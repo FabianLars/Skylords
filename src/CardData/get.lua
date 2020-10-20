@@ -190,7 +190,7 @@ function p.abilities_all(cardname)
     if data[cardname .. " (Shadow)"] then for _,v in ipairs(data[cardname .. " (Shadow)"]["abilities"]) do t[#t+1] = v end end
     if data[cardname .. " (Promo)"] then for _,v in ipairs(data[cardname .. " (Promo)"]["abilities"]) do t[#t+1] = v end end
     if t then
-        for k,v in ipairs(t) do
+        for _,v in ipairs(t) do
             if not hash[v["name"]] then
                 res[#res+1] = v
                 hash[v["name"]] = true

@@ -516,7 +516,7 @@ local function verifyName(n)
 end
 
 local function chargeRules(index)
-    local chargeRules = {
+    local charge_rules = {
         [4] = { 1, 1, 1, 1 },
         [8] = { 4, 2, 1, 1 },
         [12] = { 6, 2, 2, 2 },
@@ -524,8 +524,8 @@ local function chargeRules(index)
         [20] = { 10, 4, 3, 3 },
         [24] = { 12, 4, 4, 4 }
     }
-    if index then return chargeRules[index] end
-    return chargeRules
+    if index then return charge_rules[index] end
+    return charge_rules
 end
 
 -- TODO: Upgrade Cards
@@ -535,14 +535,14 @@ end
 ---@protected
 local function _card(data, args)
     local card = CardClass()
-    local chargeRules = chargeRules()
+    local charge_rules = chargeRules()
     local name = args["name"] or args[1] or "Name missing"
     local displayName, aff, promo = verifyName(args["name"] or args[1] or "Name missing")
     if data["affinity"] then aff = data["affinity"] end
     if data["promo"] then promo = data["promo"] end
     if data["temporary_card"] then promo = true end
     local scaling = args["scaling"] or data["scaling"] or args["displayscaling"] or data["displayscaling"] or 0.74
-    local err = nil
+    --local err = nil
     local check_size = {
         S = true,
         M = true,
@@ -618,7 +618,7 @@ local function _card(data, args)
             and { data["charges"] or 4, 0, 0, 0 }
             or (type(data["charges"]) == table
             and data["charges"]
-            or (chargeRules[data["charges"] or 4]) or chargeRules[4])
+            or (charge_rules[data["charges"] or 4]) or charge_rules[4])
     )
     local actualCurrentCharge
     for i=0, chargeupgrade do
@@ -782,7 +782,6 @@ local function _list(args)
         end
     else
         if (args[1] == "cardtype" and args[2] == "cards") or args[1] == nil or args[1] == "" then
-            local prev = ""
             for _,k in ipairs(list) do
                 if k:find "Northstar" then break end
                 if not k:find "(Promo)" then div:tag("div"):node(CardData.card{k}) end
@@ -1221,19 +1220,14 @@ function CardData.map_drops(frame)
     end
 end
 
-function CardData.navigation(frame)
+function CardData.navigation()
     local list = get.list()
-    local cards = {}
     local previous_card
 
     local grid = mw.html.create('div'):attr('id', 'card-grid'):cssText('text-align: center; clear: both')
 
-    for k,v in ipairs(list) do
-        local name, _ = v:gsub(" %(Fire%)", "")
-        local name, _ = name:gsub(" %(Frost%)", "")
-        local name, _ = name:gsub(" %(Nature%)", "")
-        local name, _ = name:gsub(" %(Shadow%)", "")
-        local name, _ = name:gsub(" %(Promo%)", "")
+    for _,v in ipairs(list) do
+        local name, _ = v:gsub(" %(Fire%)", ""):gsub(" %(Frost%)", ""):gsub(" %(Nature%)", ""):gsub(" %(Shadow%)", ""):gsub(" %(Promo%)", "")
 
         if name ~= previous_card then
             local data_orbs = get.orbs(v)
