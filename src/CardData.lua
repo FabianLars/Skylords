@@ -601,7 +601,7 @@ function CardData.card(frame)
     card.orb_2_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=%s]]', dataorbs[2], link)
     card.orb_3_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=%s]]', dataorbs[3], link)
     card.orb_4_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=%s]]', dataorbs[4], link)
-    card.data_cost_attr = format('["%s"]', concat(data['power_cost'], '',''))
+    card.data_cost_attr = format('["%s"]', concat(data['power_cost'], '","'))
     card.power_cost_wktxt = type(data['power_cost']) == 'table'
             and data['power_cost'][cardupgrade + 1]
             or data['power_cost']
@@ -616,7 +616,7 @@ function CardData.card(frame)
         actualCurrentCharge = (actualCurrentCharge or 0) + actualChargeRule[i+1] or 0
     end
     card.charges_wktxt = data['custom_charges'] or actualCurrentCharge
-    card.data_charges_attr = format('["%s"]', concat(actualChargeRule or {}, '',''))
+    card.data_charges_attr = format('["%s"]', concat(actualChargeRule or {}, '","'))
     card.squadsize = data['squadsize']
     card.class = data['class']
     card.weapon_type_wktxt = (data['weapon_type'] and data['damage'] and data['type'] ~= 'Spell') and format(
