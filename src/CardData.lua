@@ -46,7 +46,8 @@ local function getArgs(frame)
                 if tonumber(v) then
                     res[key] = tonumber(v)
                 elseif type(v) == 'string' then
-                    local value = (mw.ustring.match(v, '^%s*(.*%S)') or ''):lower()
+                    res[key] = mw.ustring.match(v, '^%s*(.*%S)') or ''
+                    local value = res[key]:lower()
                     if mw.ustring.match(value, '%w') == nil or value == '' or value == 'default' then
                         res[key] = nil
                     elseif value == 'true' then
