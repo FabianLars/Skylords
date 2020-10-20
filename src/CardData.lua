@@ -23,6 +23,73 @@ local function format(s, ...)
     return ran and val_or_err or nil 
 end
 
+--- converts input to arguments. returns itself, its arguments, its parent arguments or nil
+---@param frame table input with arguments or the mw frame object
+---@return table|nil argument list as table or nil
+---@private
+local function getArgs(frame)
+    local t
+    local res = {}
+    -- binding global 'next' to local var maximizes performance in standard lua; don't know about scribunto
+    local next = next
+    if frame[1] or frame['name'] then
+        t = frame
+    elseif frame.args and (frame.args[1] or frame.args['name']) then
+        t = frame.args
+    elseif frame:getParent() and (frame:getParent().args[1] or frame:getParent().args['name']) then
+        t = frame:getParent().args
+    end
+    if t then
+        for k, v in pairs(t) do
+            if k and v then
+                local key = type(k) == 'string' and k:gsub('%s+', '_') or k
+                if tonumber(v) then
+                    res[key] = tonumber(v)
+                elseif type(v) == 'string' then
+                    local value = (mw.ustring.match(v, '^%s*(.*%S)') or ''):lower()
+                    if mw.ustring.match(value, '%w') == nil or value == '' or value == 'default' then
+                        res[key] = nil
+                    elseif value == 'true' then
+                        res[key] = true
+                    elseif value == 'false' then
+                        res[key] = false
+                    end
+                end
+            end
+        end
+    end
+    if next(res) == nil then Error('Error (missing args): Check your input') end
+    return res
+end
+
+--- get name, affinity and promo from given cardname
+---@param n string name of card in form of 'name', 'name (affinity)' or 'name (Promo)'
+---@return string, string|nil, boolean Cardname without parantheses; affinity or nil; true if promo
+---@private
+local function verifyName(n)
+    local aff, promo = nil, false
+    local name, var = string.find(n, ' (', 1, true)
+    name, _ = name and string.sub(n, 1, (name or 0) - 1) or n, nil
+    var, _ = string.gsub(string.sub(n, (var or 0) + 1), '%)', '')
+
+    if var ~= name then
+        if var == 'Promo' then
+            promo = true
+            if name == 'Grinder' then
+                aff = 'Shadow'
+            end
+        elseif var == 'Lost Souls' or var == 'Twilight' or var == 'Superpig' then
+            name = format('%s (%s)', name, var)
+        elseif var == 'Fire' or var == 'Frost' or var == 'Nature' or var == 'Shadow' then
+            if has.affinity(name, var) then
+                aff = var
+            end
+        end
+    end
+
+    return name, aff, promo
+end
+
 local function CardClass(init)
     local self = type(init) == 'table' and init or {}
     self.scaling = self.scaling or 0.74
@@ -389,73 +456,6 @@ local function CardClass(init)
     end
 
     return self
-end
-
---- converts input to arguments. returns itself, its arguments, its parent arguments or nil
----@param frame table input with arguments or the mw frame object
----@return table|nil argument list as table or nil
----@private
-local function getArgs(frame)
-    local t
-    local res = {}
-    -- binding global 'next' to local var maximizes performance in standard lua; don't know about scribunto
-    local next = next
-    if frame[1] or frame['name'] then
-        t = frame
-    elseif frame.args and (frame.args[1] or frame.args['name']) then
-        t = frame.args
-    elseif frame:getParent() and (frame:getParent().args[1] or frame:getParent().args['name']) then
-        t = frame:getParent().args
-    end
-    if t then
-        for k, v in pairs(t) do
-            if k and v then
-                local key = type(k) == 'string' and k:gsub('%s+', '_') or k
-                if tonumber(v) then
-                    res[key] = tonumber(v)
-                elseif type(v) == 'string' then
-                    res[key] = mw.ustring.match(v, '^%s*(.*%S)') or ''
-                    if mw.ustring.match(res[key], '%w') == nil or res[key] == '' then
-                        res[key] = nil
-                    elseif res[key] == 'true' then
-                        res[key] = true
-                    elseif res[key] == 'false' then
-                        res[key] = false
-                    end
-                end
-            end
-        end
-    end
-    if next(res) == nil then Error('Error (missing args): Check your input') end
-    return res
-end
-
---- get name, affinity and promo from given cardname
----@param n string name of card in form of 'name', 'name (affinity)' or 'name (Promo)'
----@return string, string|nil, boolean Cardname without parantheses; affinity or nil; true if promo
----@private
-local function verifyName(n)
-    local aff, promo = nil, false
-    local name, var = string.find(n, ' (', 1, true)
-    name, _ = name and string.sub(n, 1, (name or 0) - 1) or n, nil
-    var, _ = string.gsub(string.sub(n, (var or 0) + 1), '%)', '')
-
-    if var ~= name then
-        if var == 'Promo' then
-            promo = true
-            if name == 'Grinder' then
-                aff = 'Shadow'
-            end
-        elseif var == 'Lost Souls' or var == 'Twilight' or var == 'Superpig' then
-            name = format('%s (%s)', name, var)
-        elseif var == 'Fire' or var == 'Frost' or var == 'Nature' or var == 'Shadow' then
-            if has.affinity(name, var) then
-                aff = var
-            end
-        end
-    end
-
-    return name, aff, promo
 end
 
 local function chargeRules(index)
