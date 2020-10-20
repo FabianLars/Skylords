@@ -730,6 +730,13 @@ function CardData.custom_card(frame)
     end
     abilities_done:allDone()
 
+    local check_size = {
+        S = true,
+        M = true,
+        L = true,
+        XL = true,
+    }
+
     return CardClass{
         scaling = args.scaling,
         affinity = affinity,
