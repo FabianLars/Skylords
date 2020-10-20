@@ -32,11 +32,11 @@ local function getArgs(frame)
     local res = {}
     -- binding global 'next' to local var maximizes performance in standard lua; don't know about scribunto
     local next = next
-    if frame[1] or frame['name'] then
+    if frame[1] or frame.name then
         t = frame
-    elseif frame.args and (frame.args[1] or frame.args['name']) then
+    elseif frame.args and (frame.args[1] or frame.args.name) then
         t = frame.args
-    elseif frame:getParent() and (frame:getParent().args[1] or frame:getParent().args['name']) then
+    elseif frame:getParent() and (frame:getParent().args[1] or frame:getParent().args.name) then
         t = frame:getParent().args
     end
     if t then
@@ -480,23 +480,23 @@ end
 function CardData.card(frame)
     local args = getArgs(frame)
 
-    if not get.exists(args['name'] or args[1]) then
+    if not get.exists(args.name or args[1]) then
         return mw.html.create('div'):css({
-            width = format('%spx', 370 * (args['scaling'] or args['displayscaling'] or 0.74)),
-            height = format('%spx', 510 * (args['scaling'] or args['displayscaling'] or 0.74))
-        }):wikitext(format('Error: Card "%s" not found', args['name'] or args[1]))
+            width = format('%spx', 370 * (args.scaling or args.displayscaling or 0.74)),
+            height = format('%spx', 510 * (args.scaling or args.displayscaling or 0.74))
+        }):wikitext(format('Error: Card "%s" not found', args.name or args[1]))
     end
 
-    local data = get.card(args['name'] or args[1])
+    local data = get.card(args.name or args[1])
 
     local card = CardClass()
     local charge_rules = chargeRules()
-    local name = args['name'] or args[1] or 'Name missing'
-    local displayName, aff, promo = verifyName(args['name'] or args[1] or 'Name missing')
-    if data['affinity'] then aff = data['affinity'] end
-    if data['promo'] then promo = data['promo'] end
-    if data['temporary_card'] then promo = true end
-    local scaling = args['scaling'] or data['scaling'] or args['displayscaling'] or data['displayscaling'] or 0.74
+    local name = args.name or args[1] or 'Name missing'
+    local displayName, aff, promo = verifyName(args.name or args[1] or 'Name missing')
+    if data.affinity then aff = data.affinity end
+    if data.promo then promo = data.promo end
+    if data.temporary_card then promo = true end
+    local scaling = args.scaling or data.scaling or args.displayscaling or data.displayscaling or 0.74
     --local err = nil
     local check_size = {
         S = true,
@@ -506,33 +506,33 @@ function CardData.card(frame)
     }
 
     local link = displayName
-    if data['nolink'] or args['nolink'] then
+    if data.nolink or args.nolink then
         link = ''
     end
 
-    local res = data['orbs'] and get['factions'](name, data['orbs'])
-    local factionLR = data['orbs'] and (res[1] ~= res[2] and res[1] .. res[2] or res[1]) or 'Blank'
+    local res = data.orbs and get['factions'](name, data.orbs)
+    local factionLR = data.orbs and (res[1] ~= res[2] and res[1] .. res[2] or res[1]) or 'Blank'
     local factionLeft = res and res[1] or nil
     local factionRight = res and res[2] or nil
 
     card.factionLeft = factionLeft
     card.factionRight = factionRight
     card.affinity = aff
-    card.notooltip = args['notooltip'] or data['notooltip'] or false
+    card.notooltip = args.notooltip or data.notooltip or false
     card.scaling = scaling
-    card.artwork_wktxt = format(data['artwork'] and format('[[File:%s||link=%s|320px]]', data['artwork'], link) or '[[File:%s%s_Card_Artwork.png||link=%s]]', displayName, promo and '_(Promo)' or '', link)
-    card.background_wktxt = format('[[File:Faction_%s_Upgrade_0_Type_%s_Frame.png||link=%s]]', factionLR, data['type'] == 'Upgrade' and 'U' or 'C', link)
-    card.spell_background_wktxt = data['type'] == 'Spell' and format('[[File:Spell_Card_Overlay_%s.png||link=%s]]', factionLR, link) or nil
-    local cardupgrade = promo and 3 or (tonumber(data['cardupgrade']) or tonumber(args['cardupgrade']) or 0)
-    local applied_charges = promo and 3 or (tonumber(data['applied_charges']) or tonumber(args['applied_charges']) or 0)
+    card.artwork_wktxt = format(data.artwork and format('[[File:%s||link=%s|320px]]', data.artwork, link) or '[[File:%s%s_Card_Artwork.png||link=%s]]', displayName, promo and '_(Promo)' or '', link)
+    card.background_wktxt = format('[[File:Faction_%s_Upgrade_0_Type_%s_Frame.png||link=%s]]', factionLR, data.type == 'Upgrade' and 'U' or 'C', link)
+    card.spell_background_wktxt = data.type == 'Spell' and format('[[File:Spell_Card_Overlay_%s.png||link=%s]]', factionLR, link) or nil
+    local cardupgrade = promo and 3 or (tonumber(data.cardupgrade) or tonumber(args.cardupgrade) or 0)
+    local applied_charges = promo and 3 or (tonumber(data.applied_charges) or tonumber(args.applied_charges) or 0)
     card.cardupgrade = cardupgrade
     card.applied_charges = applied_charges
-    if promo and not data['temporary_card'] then
+    if promo and not data.temporary_card then
         card.promo_icon_wktxt = format('[[File:Promo_Icon_%s.png||link=%s]]', factionLeft, link)
-    elseif data['starter_card'] then
+    elseif data.starter_card then
         card.promo_icon_class = 'cv-upgradeparts cv-A0'
         card.promo_icon_wktxt = format('[[File:Starter_Icon_%s.png||link=%s]]', factionLeft, link)
-    elseif data['temporary_card'] then
+    elseif data.temporary_card then
         card.promo_icon_wktxt = format('[[File:Temporary_Icon_%s.png||link=%s]]', factionLeft, link)
     end
     card.upgrade_left_1_wktxt = format('[[File:%s_Upgrade_1_Left.png||link=%s]]', factionLeft, link)
@@ -554,22 +554,22 @@ function CardData.card(frame)
     card.charge_right_3_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link)
             or format('[[File:%s_Charge_3_Right.png||link=%s]]', factionRight, link)
     card.displayName = displayName:gsub(' %(Lost Souls%)', ''):gsub(' %(Twilight%)', ''):gsub(' %(Superpig%)', '')
-    card.tokenslot_wktxt = data['orbs'] and format('[[File:Tokenslot_Overlay_%s.png||link=%s]]', factionLR, link)
+    card.tokenslot_wktxt = data.orbs and format('[[File:Tokenslot_Overlay_%s.png||link=%s]]', factionLR, link)
     card.tokenslot_affinity_wktxt = aff and format('[[File:Affinity_Tokenslot_Overlay_Blank.png||link=%s]]', link) or nil
-    local dataorbs = data['orbs'] or {}
+    local dataorbs = data.orbs or {}
     card.orb_1_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=%s]]', dataorbs[1], link)
     card.orb_2_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=%s]]', dataorbs[2], link)
     card.orb_3_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=%s]]', dataorbs[3], link)
     card.orb_4_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=%s]]', dataorbs[4], link)
-    card.data_cost_attr = format('["%s"]', concat(data['power_cost'], '","'))
-    card.power_cost_wktxt = type(data['power_cost']) == 'table'
-            and data['power_cost'][cardupgrade + 1]
-            or data['power_cost']
+    card.data_cost_attr = format('["%s"]', concat(data.power_cost, '","'))
+    card.power_cost_wktxt = type(data.power_cost) == 'table'
+            and data.power_cost[cardupgrade + 1]
+            or data.power_cost
     local actualChargeRule = (promo
-            and { data['charges'] or 4, 0, 0, 0 }
-            or (type(data['charges']) == table
-            and data['charges']
-            or (charge_rules[data['charges'] or 4]) or charge_rules[4])
+            and { data.charges or 4, 0, 0, 0 }
+            or (type(data.charges) == table
+            and data.charges
+            or (charge_rules[data.charges or 4]) or charge_rules[4])
     )
     local actualCurrentCharge
     for i=0, applied_charges do
@@ -577,24 +577,24 @@ function CardData.card(frame)
     end
     card.charges_wktxt = actualCurrentCharge
     card.data_charges_attr = format('["%s"]', concat(actualChargeRule or {}, '","'))
-    card.squadsize = data['squadsize']
-    card.class = data['class']
-    card.weapon_type_wktxt = (data['weapon_type'] and data['damage'] and data['type'] ~= 'Spell') and format(
+    card.squadsize = data.squadsize
+    card.class = data.class
+    card.weapon_type_wktxt = (data.weapon_type and data.damage and data.type ~= 'Spell') and format(
             '[[File:Card_Icon_%s%s.png||link=%s]]',
-            data['weapon_type'],
-            (check_size[data['counter'] or 'Nope'] and data['weapon_type'] ~= 'Special')
-                    and format('_Unit_Countering_Size_%s', data['counter']) or (data['weapon_type'] ~= 'Special' and '_Unit' or ''),
+            data.weapon_type,
+            (check_size[data.counter or 'Nope'] and data.weapon_type ~= 'Special')
+                    and format('_Unit_Countering_Size_%s', data.counter) or (data.weapon_type ~= 'Special' and '_Unit' or ''),
             link
     )
-    card.damage_wktxt = type(data['damage']) == 'table' and data['damage'][cardupgrade + 1] or data['damage']
-    card.unit_size_wktxt = check_size[data['size'] or 'Nope'] and format('[[File:Card_Icon_Unit_Size_%s.png||link=%s]]', data['size'], link) or nil
-    card.health_wktxt = type(data['health']) == 'table' and data['health'][cardupgrade + 1] or data['health']
-    card.edition_icon_wktxt = format('[[File:Edition_Icon_%s_%s%s.png||60x60px|link=%s]]', data['edition'], data['rarity'], data['edition'] == 'Twilight' and '' or '_HD', link)
+    card.damage_wktxt = type(data.damage) == 'table' and data.damage[cardupgrade + 1] or data.damage
+    card.unit_size_wktxt = check_size[data.size or 'Nope'] and format('[[File:Card_Icon_Unit_Size_%s.png||link=%s]]', data.size, link) or nil
+    card.health_wktxt = type(data.health) == 'table' and data.health[cardupgrade + 1] or data.health
+    card.edition_icon_wktxt = format('[[File:Edition_Icon_%s_%s%s.png||60x60px|link=%s]]', data.edition, data.rarity, data.edition == 'Twilight' and '' or '_HD', link)
 
-    card.abilities_node = data['abilities_done']
+    card.abilities_node = data.abilities_done
     if not card.abilities_node then
         local abilities_node = mw.html.create()
-        for k, v in ipairs(data['abilities'] or {}) do
+        for k, v in ipairs(data.abilities or {}) do
             if k < 5 then
                 local abil = mw.html.create('div')
                 if v['upgrade_dependency'] then
@@ -715,7 +715,7 @@ function CardData.custom_card(frame)
             abil:wikitext(format(
                     '[[File:Card_Icon_%s%s.png|30x30px||link=]]&nbsp;',
                     string.lower(args['ability_'..i..'_type']):gsub('^%l', string.upper),
-                    (args['ability_'..i..'_affinity'] == true or string.lower(args['ability_'..i..'_affinity'] or '') == 'true') and format('_Affinity_%s', args['affinity']) or ''
+                    (args['ability_'..i..'_affinity'] == true or string.lower(args['ability_'..i..'_affinity'] or '') == 'true') and format('_Affinity_%s', args.affinity) or ''
             ))
         end
         abil:wikitext(args['ability_'..i..'_name'] or '')
@@ -801,24 +801,24 @@ function CardData.deck(frame)
     local args = getArgs(frame)
 
     local res = mw.html.create('div'):cssText('display:flex;flex-wrap:wrap;')
-    if args['maxperrow'] then
+    if args.maxperrow then
         res:cssText(
                 format(
                         'max-width:100%%;width:calc(%spx * %s);',
-                        args['icononly'] and 82 * (tonumber(args['scaling']) or tonumber(args['displayscaling']) or 1) or 370 * (tonumber(args['scaling']) or tonumber(args['displayscaling']) or 0.23),
-                        args['maxperrow']
+                        args.icononly and 82 * (tonumber(args.scaling) or tonumber(args.displayscaling) or 1) or 370 * (tonumber(args.scaling) or tonumber(args.displayscaling) or 0.23),
+                        args.maxperrow
                 )
         )
     end
     for i = 1, 20 do
         local t = mw.text.split(args[i] or '', ';', true)
         if t[1] ~= '' then
-            if args['icononly'] then
+            if args.icononly then
                 res:node(
                         icon(
                                 {
                                     t[1],
-                                    size = format('%spx', (args['scaling'] or args['displayscaling'] or 1) * 80),
+                                    size = format('%spx', (args.scaling or args.displayscaling or 1) * 80),
                                     icononly = true
                                 }
                         )
@@ -830,7 +830,7 @@ function CardData.deck(frame)
                                     t[1],
                                     cardupgrade = tonumber(t[2] or 0),
                                     applied_charges = tonumber(t[3] or 0),
-                                    scaling = args['scaling'] or args['displayscaling'] or '0.23'
+                                    scaling = args.scaling or args.displayscaling or '0.23'
                                 }
                         )
                 )
@@ -932,7 +932,7 @@ function CardData.icon(frame)
     end
     local linkdest = name == 'Mo' and 'Mo#Card' or (var ~= 'Promo' and format('%s%s', name, firstfile) or name)
 
-    local size = math.floor(string.gsub(args['size'] or '20px', 'px', '') + 0.5)
+    local size = math.floor(string.gsub(args.size or '20px', 'px', '') + 0.5)
 
     local aff = false
     if var == 'Fire' or var == 'Frost' or var == 'Nature' or var == 'Shadow' then
@@ -966,7 +966,7 @@ function CardData.icon(frame)
                             format('[[File:Affinity_Orb_Shadow.png|%spx|link=Grinder]]', math.floor(size * 0.4 + 0.5)) or
                             '')
     ):done():done()
-    if not args['icononly'] then
+    if not args.icononly then
         span:wikitext(format(' [[%s|%s]]', linkdest, linktext))
     end
 
@@ -979,7 +979,7 @@ function CardData.infobox(frame)
     local vname, _, _ = get.verified_name(args[1])
     local abils = {}
     for k,v in pairs(get.abilities_all(args[1])) do
-        abils[k] = '<div>' .. frame:expandTemplate{title='ai', args={ v['name'] , args[1]..(has.nonpromo(args[1]) and '' or ' (Promo)'), link=args[1] }} .. '</div>'
+        abils[k] = '<div>' .. frame:expandTemplate{title='ai', args={ v.name , args[1]..(has.nonpromo(args[1]) and '' or ' (Promo)'), link=args[1] }} .. '</div>'
     end
     return frame:expandTemplate{
         title = 'Infobox card',
@@ -1017,7 +1017,7 @@ function CardData.list(frame)
     local args = getArgs(frame)
 
     local list = get.list()
-    local div = args['ci'] == true and mw.html.create() or mw.html.create('div'):addClass('list-of-all-cards'):css{
+    local div = args.ci == true and mw.html.create() or mw.html.create('div'):addClass('list-of-all-cards'):css{
         ['display'] = 'flex',
         ['flex-wrap'] = 'wrap',
         ['justify-content'] = 'center'
@@ -1026,7 +1026,7 @@ function CardData.list(frame)
     if args[1] ~= '' and args[2] ~= '' and args[1] ~= 'cardtype' then
         for _,k in ipairs(list) do
             if get[args[1]](k) == args[2] then
-                if args['ci'] == true then
+                if args.ci == true then
                     div:wikitext('\n* '):node(CardData.icon{k})
                 else
                     div:tag('div'):node(CardData.card{k})
@@ -1118,9 +1118,9 @@ end
 
 function CardData.progression_charges(frame)
     local args = getArgs(frame)
-    if not args['index'] and not args[1] then return 'Missing max charge value' end
-    local rule = chargeRules(tonumber(args['index'] or args[1]))
-    if not rule then return 'Value '..(args['index'] or args[1])..' not found in ruleset'  end
+    if not args.index and not args[1] then return 'Missing max charge value' end
+    local rule = chargeRules(tonumber(args.index or args[1]))
+    if not rule then return 'Value '..(args.index or args[1])..' not found in ruleset'  end
     return frame:expandTemplate{title = 'p', args = {
         [1] = rule[1],
         [2] = 'No extra charges applied',
@@ -1144,7 +1144,7 @@ function CardData.tooltip(frame)
     local name = args[1]--verifyName(args[1])
     local tooltip = mw.html.create('div'):cssText('display:flex;')
 
-    if get['card'](name) then
+    if get.card(name) then
         tooltip:wikitext(tostring(CardData.card({
             name,
             ['cardupgrade'] = 0,
@@ -1154,7 +1154,7 @@ function CardData.tooltip(frame)
             ['nolink'] = true
         })))
     end
-    if get['card'](name..' (Fire)') then
+    if get.card(name..' (Fire)') then
         tooltip:wikitext(tostring(CardData.card({
             name..' (Fire)',
             ['cardupgrade'] = 0,
@@ -1164,7 +1164,7 @@ function CardData.tooltip(frame)
             ['nolink'] = true
         })))
     end
-    if get['card'](name..' (Frost)') then
+    if get.card(name..' (Frost)') then
         tooltip:wikitext(tostring(CardData.card({
             name..' (Frost)',
             ['cardupgrade'] = 0,
@@ -1174,7 +1174,7 @@ function CardData.tooltip(frame)
             ['nolink'] = true
         })))
     end
-    if get['card'](name..' (Nature)') then
+    if get.card(name..' (Nature)') then
         tooltip:wikitext(tostring(CardData.card({
             name..' (Nature)',
             ['cardupgrade'] = 0,
@@ -1184,7 +1184,7 @@ function CardData.tooltip(frame)
             ['nolink'] = true
         })))
     end
-    if get['card'](name..' (Shadow)') then
+    if get.card(name..' (Shadow)') then
         tooltip:wikitext(tostring(CardData.card({
             name..' (Shadow)',
             ['cardupgrade'] = 0,
@@ -1194,7 +1194,7 @@ function CardData.tooltip(frame)
             ['nolink'] = true
         })))
     end
-    if get['card'](name..' (Promo)') then
+    if get.card(name..' (Promo)') then
         tooltip:wikitext(tostring(CardData.card({
             name..' (Promo)' }, {
             ['notooltip'] = true,
