@@ -19,7 +19,7 @@ end
 ---@return string
 ---@protected
 local function format(s, ...)
-    local ran, val_or_err = pcall(string.format(s, unpack(arg)))
+    local ran, val_or_err = pcall(string.format, s, ...)
     return ran and val_or_err or nil 
 end
 
