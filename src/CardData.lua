@@ -574,7 +574,7 @@ function CardData.card(frame)
     for i=0, applied_charges do
         actualCurrentCharge = (actualCurrentCharge or 0) + actualChargeRule[i+1] or 0
     end
-    card.charges_wktxt = data['custom_charges'] or actualCurrentCharge
+    card.charges_wktxt = actualCurrentCharge
     card.data_charges_attr = format('["%s"]', concat(actualChargeRule or {}, '","'))
     card.squadsize = data['squadsize']
     card.class = data['class']
