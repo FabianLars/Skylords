@@ -650,8 +650,8 @@ function CardData.custom_card(frame)
         end
     end
 
-    local res = args.orbs and get.factions(name, args.orbs)
-    local factionLR = res and (res[1] ~= res[2] and res[1] .. res[2] or res[1]) or 'Blank'
+    local res = args.orbs and get.factions(name, args.orbs) or {}
+    local factionLR = res[1] and (res[1] ~= res[2] and res[1] .. res[2] or res[1]) or 'Blank'
     local factionLeft = res[1]
     local factionRight = res[2]
 
