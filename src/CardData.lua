@@ -20,7 +20,7 @@ end
 ---@protected
 local function format(s, ...)
     local ran, val_or_err = pcall(string.format, s, ...)
-    return ran and val_or_err or nil 
+    return ran and val_or_err or nil
 end
 
 --- converts input to arguments. returns itself, its arguments, its parent arguments or nil
