@@ -16,7 +16,7 @@ local function concat(t, sep)
 end
 
 ---@param s string to format
----@return string
+---@return string|nil
 ---@protected
 local function format(s, ...)
     local ran, val_or_err = pcall(string.format, s, ...)
@@ -24,52 +24,11 @@ local function format(s, ...)
 end
 
 local function CardClass(init)
-    local self = {
-        scaling = 0.74,
-        affinity = nil,
-        factionLeft = nil,
-        factionRight = nil,
-        displayName = '',
-        artwork_wktxt = nil,
-        background_wktxt = nil,
-        spell_background_wktxt = nil,
-        cardupgrade = 0,
-        applied_charges = 0,
-        upgrade_left_1_wktxt = nil,
-        upgrade_left_2_wktxt = nil,
-        upgrade_left_3_wktxt = nil,
-        charge_left_1_wktxt = nil,
-        charge_left_2_wktxt = nil,
-        charge_left_3_wktxt = nil,
-        upgrade_right_1_wktxt = nil,
-        upgrade_right_2_wktxt = nil,
-        upgrade_right_3_wktxt = nil,
-        charge_right_1_wktxt = nil,
-        charge_right_2_wktxt = nil,
-        charge_right_3_wktxt = nil,
-        promo_icon_wktxt = nil,
-        promo_icon_class = nil,
-        tokenslot_wktxt = nil,
-        tokenslot_affinity_wktxt = nil,
-        orb_1_wktxt = nil,
-        orb_2_wktxt = nil,
-        orb_3_wktxt = nil,
-        orb_4_wktxt = nil,
-        data_cost_attr = nil,
-        power_cost_wktxt = nil,
-        data_charges_attr = nil,
-        charges_wktxt = nil,
-        unit_size_wktxt = nil,
-        squadsize = nil,
-        class = nil,
-        damage_wktxt = nil,
-        weapon_type_wktxt = nil,
-        health_wktxt = nil,
-        edition_icon_wktxt = nil,
-        no_tt = false,
-        -- TODO: Make abilities something classy
-        abilities_node = nil,
-    }
+    local self = type(init) == 'table' and init or {}
+    self.scaling = self.scaling or 0.74
+    self.cardupgrade = self.cardupgrade or 0
+    self.applied_charges = self.applied_charges or 0
+    self.notooltip = self.notooltip or false
 
     function self.build()
         local card_container = mw.html.create('div'):css(
@@ -78,7 +37,7 @@ local function CardClass(init)
                     ['display'] = 'table', -- kinda dirty fix ngl
                     ['position'] = 'relative',
                     ['transform-origin'] = 'top left',
-                    ['transform'] = format('scale(%s)', self.scaling or 0.74),
+                    ['transform'] = format('scale(%s)', self.scaling),
                     ['height'] = '510px',
                     ['width'] = '370px',
                     ['color'] = 'white',
@@ -86,7 +45,7 @@ local function CardClass(init)
                     ['text-shadow'] = '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
                 }
         ):addClass(format('hidden cv-card-container%s', self.promo and ' cv-promo' or ''))
-        if not self.no_tt then
+        if not self.notooltip then
             card_container:addClass('card-icon'):attr('data-card', self.displayName or '')
         end
 
@@ -422,11 +381,11 @@ local function CardClass(init)
 
         return mw.html.create('div'):css(
                 {
-                    ['width'] = format('%spx', 370 * (self.scaling or 0.74)),
-                    ['height'] = format('%spx', 510 * (self.scaling or 0.74)),
+                    ['width'] = format('%spx', 370 * self.scaling),
+                    ['height'] = format('%spx', 510 * self.scaling),
                     ['display'] = 'inline-block'
                 }
-        ):tag('div'):cssText('display:none'):wikitext(self.displayName):done():node(card_container):allDone()
+        ):tag('div'):cssText('display:none'):wikitext(self.displayName or ''):done():node(card_container):allDone()
     end
 
     return self
@@ -594,7 +553,7 @@ function CardData.card(frame)
     card.charge_right_3_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link)
             or format('[[File:%s_Charge_3_Right.png||link=%s]]', factionRight, link)
     card.displayName = displayName:gsub(' %(Lost Souls%)', ''):gsub(' %(Twilight%)', ''):gsub(' %(Superpig%)', '')
-    card.tokenslot_wktxt = data['orbs'] and format('[[File:Tokenslot_Overlay_%s.png||link=%s]]' or nil, factionLR, link)
+    card.tokenslot_wktxt = data['orbs'] and format('[[File:Tokenslot_Overlay_%s.png||link=%s]]', factionLR, link)
     card.tokenslot_affinity_wktxt = aff and format('[[File:Affinity_Tokenslot_Overlay_Blank.png||link=%s]]', link) or nil
     local dataorbs = data['orbs'] or {}
     card.orb_1_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=%s]]', dataorbs[1], link)
@@ -682,66 +641,71 @@ end
 function CardData.custom_card(frame)
     local args = getArgs(frame)
 
-    if args['orbs'] then
-        args['orbs'] = mw.text.split(args['orbs'], '%s*,%s*')
-        for k,v in ipairs(args['orbs'] or {}) do
-            args['orbs'][k] = v:gsub('^%l', string.upper)
+    local name = args.name or args[1] or ''
+
+    if args.orbs then
+        args.orbs = mw.text.split(args.orbs, '%s*,%s*')
+        for k,v in ipairs(args.orbs or {}) do
+            args.orbs[k] = v:gsub('^%l', string.upper)
         end
     end
 
-    if args['name'] then args[1] = args['name'] end
+    local res = args.orbs and get.factions(name, args.orbs)
+    local factionLR = res and (res[1] ~= res[2] and res[1] .. res[2] or res[1]) or 'Blank'
+    local factionLeft = res[1]
+    local factionRight = res[2]
 
-    if args['type'] then args['type'] = args['type']:gsub('^%l', string.upper) end
+    if args.type then args.type = args.type:gsub('^%l', string.upper) end
 
-    if args['edition'] then
-        args['edition'] = args['edition']:gsub('^%l', string.upper)
-        if args['edition'] == 'Lost souls' then args['edition'] = 'Lost Souls' end
+    if args.edition then
+        args.edition = args.edition:gsub('^%l', string.upper)
+        if args.edition == 'Lost souls' then args.edition = 'Lost Souls' end
     end
 
-    if args['rarity'] then
-        args['rarity'] = args['rarity']:gsub('^%l', string.upper)
-        if args['rarity'] == 'Ultra rare' then args['rarity'] = 'Ultra Rare' end
+    if args.rarity then
+        args.rarity = args.rarity:gsub('^%l', string.upper)
+        if args.rarity == 'Ultra rare' then args.rarity = 'Ultra Rare' end
     end
 
-    if args['weapon_type'] then
-        args['weapon_type'] = args['weapon_type']:gsub('^%l', string.upper)
+    if args.weapon_type then
+        args.weapon_type = args.weapon_type:gsub('^%l', string.upper)
     end
 
-    if string.lower(args['affinity'] or 'none') == 'none' then
-        args['affinity'] = nil
+    if string.lower(args.affinity or 'none') == 'none' then
+        args.affinity = nil
     end
-    if args['affinity'] then
-        args['affinity'] = args['affinity']:gsub('^%l', string.upper)
-    end
-
-    if args['counter'] then
-        args['counter'] = string.upper(args['counter'])
+    if args.affinity then
+        args.affinity = args.affinity:gsub('^%l', string.upper)
     end
 
-    if args['size'] then
-        args['size'] = string.upper(args['size'])
+    if args.counter then
+        args.counter = string.upper(args.counter)
     end
 
-    if type(args['upgrade']) == 'string' then
-        if args['upgrade']:lower() == 'promo' then
-            args['promo'] = true
+    if args.size then
+        args.size = string.upper(args.size)
+    end
+
+    local promo_txt, promo_class
+    if type(args.upgrade) == 'string' then
+        if args.upgrade:lower() == 'promo' then
+            args.promo = true
+            promo_txt = format('[[File:Promo_Icon_%s.png||link=]]', factionLeft)
         end
-        if args['upgrade']:lower() == 'starter' then
-            args['starter_card'] = true
+        if args.upgrade:lower() == 'starter' then
+            args.starter_card = true
+            promo_class = 'cv-upgradeparts cv-A0'
+            promo_txt = format('[[File:Starter_Icon_%s.png||link=]]', factionLeft)
         end
-        if args['upgrade']:lower() == 'temp'
-                or args['upgrade']:lower() == 'temporary'
-                or args['upgrade']:lower() == 'tome' then
-            args['temporary_card'] = true
+        if args.upgrade:lower() == 'temp'
+                or args.upgrade:lower() == 'temporary'
+                or args.upgrade:lower() == 'tome' then
+            args.temporary_card = true
+            promo_txt = format('[[File:Temporary_Icon_%s.png||link=]]', factionLeft)
         end
     else
-        args['cardupgrade'] = args['upgrade']
+        args.cardupgrade = args.upgrade
     end
-    args['upgrade'] = nil
-
-    args['custom_charges'] = args['charges']
-    args['charges'] = nil
-    args['applied_charges'] = args['applied_charges']
 
     local abilities_done = mw.html.create()
     for i = 1, 5 do
@@ -760,29 +724,65 @@ function CardData.custom_card(frame)
             abil:wikitext(format('[[File:Card_Icon_Upgrade_Status_0%s.png||link=]]', args['ability_'..i..'_upgrade']))
         end
 
-        args['ability_'..i..'_name'] = nil
-        args['ability_'..i..'_icon'] = nil
-        args['ability_'..i..'_affinity'] = nil
-        args['ability_'..i..'_upgrade'] = nil
-        args['ability_'..i..'_type'] = nil
-        args['ability_'..i..'_cost'] = nil
-        args['ability_'..i..'_description'] = nil
-
         abil:allDone()
         abilities_done:node(abil)
 
     end
     abilities_done:allDone()
-    args['abilities_done'] = abilities_done
 
-    return _card(args, {
-        args[1],
-        ['name'] = args['name'],
-        ['notooltip'] = true,
-        ['nolink'] = true,
-        ['custom'] = true,
-        ['scaling'] = tonumber(args['scaling']) or tonumber(args['displayscaling']) or 0.74
-    })
+    return CardClass{
+        scaling = args.scaling,
+        affinity = affinity,
+        factionLeft = factionLeft,
+        factionRight = factionRight,
+        displayName = name,
+        artwork_wktxt = format('[[File:%s||link=|320px]]', args.artwork),
+        background_wktxt = format('[[File:Faction_%s_Upgrade_0_Type_C_Frame.png||link=]]', factionLR),
+        spell_background_wktxt = args.type == 'Spell' and format('[[File:Spell_Card_Overlay_%s.png||link=]]', factionLR) or nil,
+        cardupgrade = args.upgrade,
+        applied_charges = args.applied_charges,
+        upgrade_left_1_wktxt = format('[[File:%s_Upgrade_1_Left.png||link=]]', factionLeft),
+        upgrade_left_2_wktxt = format('[[File:%s_Upgrade_2_Left.png||link=]]', factionLeft),
+        upgrade_left_3_wktxt = format('[[File:%s_Upgrade_3_Left.png||link=]]', factionLeft),
+        charge_left_1_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=]]')
+            or format('[[File:%s_Charge_1_Left.png||link=]]', factionLeft),
+        charge_left_2_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]')
+            or format('[[File:%s_Charge_2_Left.png||link=]]', factionLeft),
+        charge_left_3_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]')
+            or format('[[File:%s_Charge_3_Left.png||link=]]', factionLeft),
+        upgrade_right_1_wktxt = format('[[File:%s_Upgrade_1_Right.png||link=]]', factionRight),
+        upgrade_right_2_wktxt = format('[[File:%s_Upgrade_%s_Right.png||link=]]', factionRight, factionRight == 'Neutral' and '1' or '2'),
+        upgrade_right_3_wktxt = format('[[File:%s_Upgrade_%s_Right.png||link=]]', factionRight, factionRight == 'Neutral' and '1' or '3'),
+        charge_right_1_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link)
+            or format('[[File:%s_Charge_1_Right.png||link=]]', factionRight),
+        charge_right_2_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link)
+            or format('[[File:%s_Charge_2_Right.png||link=]]', factionRight),
+        charge_right_3_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link)
+            or format('[[File:%s_Charge_3_Right.png||link=]]', factionRight),
+        promo_icon_wktxt = promo_txt,
+        promo_icon_class = promo_class,
+        tokenslot_wktxt = args.orbs and format('[[File:Tokenslot_Overlay_%s.png||link=]]', factionLR),
+        tokenslot_affinity_wktxt = aff and '[[File:Affinity_Tokenslot_Overlay_Blank.png||link=]]' or nil,
+        orb_1_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=]]', dataorbs[1]),
+        orb_2_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=]]', dataorbs[2]),
+        orb_3_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=]]', dataorbs[3]),
+        orb_4_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=]]', dataorbs[4]),
+        power_cost_wktxt = args.power_cost,
+        charges_wktxt = args.charges,
+        unit_size_wktxt = args.size,
+        squadsize = args.squadsize,
+        class = args.class,
+        damage_wktxt = args.damage,
+        weapon_type_wktxt = (args.weapon_type and args.damage and args.type ~= 'Spell') and format(
+            '[[File:Card_Icon_%s%s.png||link=]]',
+            args.weapon_type,
+            (check_size[args.counter or 'Nope'] and args.weapon_type ~= 'Special') and format('_Unit_Countering_Size_%s', args.counter) or (args.weapon_type ~= 'Special' and '_Unit' or '')
+        ),
+        health_wktxt = args.health,
+        edition_icon_wktxt = format('[[File:Edition_Icon_%s_%s%s.png||60x60px|link=]]', args.edition, args.rarity, args.edition == 'Twilight' and '' or '_HD'),
+        notooltip = true,
+        abilities_node = abilities_done,
+    }.build()
 end
 
 --- returns a list of cards formatted as a deck display
