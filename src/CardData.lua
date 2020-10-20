@@ -99,8 +99,7 @@ local function CardClass(init)
     self.notooltip = self.notooltip or false
 
     function self.build()
-        local card_container = mw.html.create('div'):css(
-                {
+        local card_container = mw.html.create('div'):css{
                     ['font-size'] = '28px',
                     ['display'] = 'table', -- kinda dirty fix ngl
                     ['position'] = 'relative',
@@ -111,194 +110,155 @@ local function CardClass(init)
                     ['color'] = 'white',
                     ['overflow'] = 'hidden',
                     ['text-shadow'] = '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-                }
-        ):addClass(format('hidden cv-card-container%s', self.promo and ' cv-promo' or ''))
+                }:addClass(format('hidden cv-card-container%s', self.promo and ' cv-promo' or ''))
         if not self.notooltip then
             card_container:addClass('card-icon'):attr('data-card', self.displayName or '')
         end
 
-        local card_artwork = mw.html.create('div'):css(
-                {
+        local card_artwork = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['top'] = '35px',
                     ['left'] = 0,
                     ['right'] = 0,
                     ['z-index'] = 10,
                     ['text-align'] = 'center'
-                }
-        ):wikitext(self.artwork_wktxt or ''):done()
+                }:wikitext(self.artwork_wktxt or ''):done()
 
-        local card_background = mw.html.create('div'):css(
-                {
+        local card_background = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['z-index'] = 30
-                }
-        ):wikitext(self.background_wktxt or '')
+                }:wikitext(self.background_wktxt or '')
         if self.spell_background_wktxt then
-            card_background:tag('div'):css(
-                    {
+            card_background:tag('div'):css{
                         ['position'] = 'absolute',
                         ['left'] = 0,
                         ['right'] = 0,
                         ['bottom'] = '8px',
                         ['z-index'] = '50',
                         ['text-align'] = 'center'
-                    }
-            ):wikitext(self.spell_background_wktxt):done()
+                    }:wikitext(self.spell_background_wktxt):done()
         end
         card_background:done()
 
         self.cardupgrade = self.cardupgrade or 0
         self.applied_charges = self.applied_charges or 0
         local upgradeLeft = mw.html.create()
-                              :tag('div'):addClass('cv-upgradeparts cv-U1'):css(
-                {
+                              :tag('div'):addClass('cv-upgradeparts cv-U1'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '168px',
                     ['left'] = 0,
                     ['z-index'] = 150,
                     ['display'] = (self.cardupgrade == 1 and '' or 'none')
-                }
-        ):wikitext(self.upgrade_left_1_wktxt or ''):done()
-                              :tag('div'):addClass('cv-upgradeparts cv-U2'):css(
-                {
+                }:wikitext(self.upgrade_left_1_wktxt or ''):done()
+                              :tag('div'):addClass('cv-upgradeparts cv-U2'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '168px',
                     ['left'] = 0,
                     ['z-index'] = 150,
                     ['display'] = (self.cardupgrade == 2 and '' or 'none')
-                }
-        ):wikitext(self.upgrade_left_2_wktxt):done()
-                              :tag('div'):addClass('cv-upgradeparts cv-U3'):css(
-                {
+                }:wikitext(self.upgrade_left_2_wktxt):done()
+                              :tag('div'):addClass('cv-upgradeparts cv-U3'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '168px',
                     ['left'] = 0,
                     ['z-index'] = 150,
                     ['display'] = (self.cardupgrade == 3 and '' or 'none')
-                }
-        ):wikitext(self.upgrade_left_3_wktxt or ''):done()
-                              :tag('div'):addClass('cv-chargeparts cv-C1'):css(
-                {
+                }:wikitext(self.upgrade_left_3_wktxt or ''):done()
+                              :tag('div'):addClass('cv-chargeparts cv-C1'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = (self.factionLeft == 'Neutral' and '232px' or '233px'),
                     ['left'] = (self.factionLeft == 'Neutral' and '10px' or '4px'),
                     ['z-index'] = 200,
                     ['display'] = ((self.applied_charges >= 1 and self.applied_charges <= self.cardupgrade) and '' or 'none')
-                }
-        ):wikitext(self.charge_left_1_wktxt or ''):done()
-                              :tag('div'):addClass('cv-chargeparts cv-C2'):css(
-                {
+                }:wikitext(self.charge_left_1_wktxt or ''):done()
+                              :tag('div'):addClass('cv-chargeparts cv-C2'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = (self.factionLeft == 'Neutral' and '312px' or '304px'),
                     ['left'] = (self.factionLeft == 'Neutral' and '10px' or '4px'),
                     ['z-index'] = 200,
                     ['display'] = ((self.applied_charges >= 2 and self.applied_charges <= self.cardupgrade) and '' or 'none')
-                }
-        ):wikitext(self.charge_left_2_wktxt or ''):done()
-                              :tag('div'):addClass('cv-chargeparts cv-C3'):css(
-                {
+                }:wikitext(self.charge_left_2_wktxt or ''):done()
+                              :tag('div'):addClass('cv-chargeparts cv-C3'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = (self.factionLeft == 'Neutral' and '394px' or '372px'),
                     ['left'] = (self.factionLeft == 'Neutral' and '10px' or '4px'),
                     ['z-index'] = 200,
                     ['display'] = ((self.applied_charges >= 3 and self.applied_charges <= self.cardupgrade) and '' or 'none')
-                }
-        ):wikitext(self.charge_left_3_wktxt or ''):done()
+                }:wikitext(self.charge_left_3_wktxt or ''):done()
         if self.promo_icon_wktxt then
-            upgradeLeft:tag('div'):css(
-                    {
+            upgradeLeft:tag('div'):css{
                         ['position'] = 'absolute',
                         ['top'] = '5px',
                         ['left'] = 0,
                         ['z-index'] = 300
-                    }
-            ):addClass(self.promo_icon_class or ''):wikitext(self.promo_icon_wktxt):done()
+                    }:addClass(self.promo_icon_class or ''):wikitext(self.promo_icon_wktxt):done()
         end
         upgradeLeft:done()
 
         local upgradeRight = mw.html.create()
-                               :tag('div'):addClass('cv-upgradeparts cv-U1'):css(
-                {
+                               :tag('div'):addClass('cv-upgradeparts cv-U1'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '168px',
                     ['right'] = 0,
                     ['z-index'] = 150,
                     ['display'] = (self.cardupgrade >= 1 and '' or 'none')
-                }
-        ):wikitext(self.upgrade_right_1_wktxt or ''):done()
-                               :tag('div'):addClass('cv-upgradeparts cv-U2'):css(
-                {
+                }:wikitext(self.upgrade_right_1_wktxt or ''):done()
+                               :tag('div'):addClass('cv-upgradeparts cv-U2'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = (self.factionRight == 'Neutral' and '248px' or '296px'),
                     ['right'] = 0,
                     ['z-index'] = 150,
                     ['display'] = (self.cardupgrade >= 2 and '' or 'none')
-                }
-        ):wikitext(self.upgrade_right_2_wktxt or ''):done()
-                               :tag('div'):addClass('cv-upgradeparts cv-U3'):css(
-                {
+                }:wikitext(self.upgrade_right_2_wktxt or ''):done()
+                               :tag('div'):addClass('cv-upgradeparts cv-U3'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = (self.factionRight == 'Neutral' and '326px' or '362px'),
                     ['right'] = 0,
                     ['z-index'] = 150,
                     ['display'] = (self.cardupgrade == 3 and '' or 'none')
-                }
-        ):wikitext(self.upgrade_right_3_wktxt or ''):done()
-                               :tag('div'):addClass('cv-chargeparts cv-C1'):css(
-                {
+                }:wikitext(self.upgrade_right_3_wktxt or ''):done()
+                               :tag('div'):addClass('cv-chargeparts cv-C1'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = (self.factionRight == 'Neutral' and '232px' or '221px'),
                     ['right'] = (self.factionRight == 'Neutral' and '11px' or '2px'),
                     ['z-index'] = 200,
                     ['display'] = ((self.applied_charges >= 1 and self.applied_charges <= self.cardupgrade) and '' or 'none')
-                }
-        ):wikitext(self.charge_right_1_wktxt or ''):done()
-                               :tag('div'):addClass('cv-chargeparts cv-C2'):css(
-                {
+                }:wikitext(self.charge_right_1_wktxt or ''):done()
+                               :tag('div'):addClass('cv-chargeparts cv-C2'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = (self.factionRight == 'Neutral' and '312px' or '294px'),
                     ['right'] = (self.factionRight == 'Neutral' and '11px' or '2px'),
                     ['z-index'] = 200,
                     ['display'] = ((self.applied_charges >= 2 and self.applied_charges <= self.cardupgrade) and '' or 'none')
-                }
-        ):wikitext(self.charge_right_2_wktxt or ''):done()
-                               :tag('div'):addClass('cv-chargeparts cv-C3'):css(
-                {
+                }:wikitext(self.charge_right_2_wktxt or ''):done()
+                               :tag('div'):addClass('cv-chargeparts cv-C3'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = (self.factionRight == 'Neutral' and '390px' or '362px'),
                     ['right'] = (self.factionRight == 'Neutral' and '11px' or '1px'),
                     ['z-index'] = 200,
                     ['display'] = ((self.applied_charges >= 3 and self.applied_charges <= self.cardupgrade) and '' or 'none')
-                }
-        ):wikitext(self.charge_right_3_wktxt or ''):done()
+                }:wikitext(self.charge_right_3_wktxt or ''):done()
 
-        local card_name = mw.html.create('div'):css(
-                {
+        local card_name = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['top'] = '21px',
                     ['left'] = '50px',
                     ['z-index'] = 500
-                }
-        ):wikitext(self.displayName or ''):done()
+                }:wikitext(self.displayName or ''):done()
 
-        local card_tokenslot = mw.html.create('div'):css(
-                {
+        local card_tokenslot = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['top'] = '3px',
                     ['right'] = '5px',
                     ['z-index'] = 500
-                }
-        ):wikitext(self.tokenslot_wktxt or ''):done()
+                }:wikitext(self.tokenslot_wktxt or ''):done()
 
-        local card_tokenslot_affinity = mw.html.create('div'):css(
-                {
+        local card_tokenslot_affinity = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['top'] = '3px',
                     ['right'] = '5px',
                     ['z-index'] = 900
-                }
-        ):wikitext(self.tokenslot_affinity_wktxt or '')
+                }:wikitext(self.tokenslot_affinity_wktxt or '')
         if self.affinity then
             card_tokenslot_affinity:addClass(
                     format('card-viewer-color-%s', string.lower(self.affinity))
@@ -306,44 +266,35 @@ local function CardClass(init)
         end
         card_tokenslot_affinity:done()
 
-        local orb1 = mw.html.create('div'):css(
-                {
+        local orb1 = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '435px',
                     ['right'] = '12px',
                     ['z-index'] = 1000
-                }
-        ):wikitext(self.orb_1_wktxt or ''):done()
+                }:wikitext(self.orb_1_wktxt or ''):done()
 
-        local orb2 = mw.html.create('div'):css(
-                {
+        local orb2 = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '430px',
                     ['right'] = '30px',
                     ['z-index'] = 1000
-                }
-        ):wikitext(self.orb_2_wktxt or ''):done()
+                }:wikitext(self.orb_2_wktxt or ''):done()
 
-        local orb3 = mw.html.create('div'):css(
-                {
+        local orb3 = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '430px',
                     ['right'] = '49px',
                     ['z-index'] = 1000
-                }
-        ):wikitext(self.orb_3_wktxt or ''):done()
+                }:wikitext(self.orb_3_wktxt or ''):done()
 
-        local orb4 = mw.html.create('div'):css(
-                {
+        local orb4 = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '435px',
                     ['right'] = '67px',
                     ['z-index'] = 1000
-                }
-        ):wikitext(self.orb_4_wktxt or ''):done()
+                }:wikitext(self.orb_4_wktxt or ''):done()
 
-        local card_power_cost = mw.html.create('div'):addClass('cv-cost'):attr('data-cost', self.data_cost_attr or ''):css(
-                {
+        local card_power_cost = mw.html.create('div'):addClass('cv-cost'):attr('data-cost', self.data_cost_attr or ''):css{
                     ['position'] = 'absolute',
                     ['top'] = '24px',
                     ['right'] = '31px',
@@ -351,18 +302,15 @@ local function CardClass(init)
                     ['font-size'] = '22px',
                     ['width'] = '40px',
                     ['text-align'] = 'center'
-                }
-        ):wikitext(self.power_cost_wktxt or ''):done()
+                }:wikitext(self.power_cost_wktxt or ''):done()
 
-        local card_charges_squadsize_class = mw.html.create('div'):css(
-                {
+        local card_charges_squadsize_class = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['top'] = '305px',
                     ['left'] = '30px',
                     ['z-index'] = 500,
                     ['font-size'] = self.displayName == 'White Rangers' and '27px' or '28px'
-                }
-        ):tag('span')
+                }:tag('span')
                                                :addClass('cv-charges')
                                                :attr('data-charges', self.data_charges_attr or '')
                                                :wikitext(self.charges_wktxt or ''):done()
@@ -371,74 +319,60 @@ local function CardClass(init)
         end
         card_charges_squadsize_class:wikitext(format(' %s', self.class or '')):done()
 
-        local card_affinity_icon = mw.html.create('div'):css(
-                {
+        local card_affinity_icon = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['top'] = '293px',
                     ['right'] = '12px',
                     ['z-index'] = 500
-                }
-        ):wikitext(self.affinity and format('[[File:Affinity_Orb_%s.png||link=%s]]', self.affinity, self.displayName) or ''):done()
+                }:wikitext(self.affinity and format('[[File:Affinity_Orb_%s.png||link=%s]]', self.affinity, self.displayName) or ''):done()
 
-        local card_abilities = mw.html.create('div'):css(
-                {
+        local card_abilities = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['top'] = '340px',
                     ['left'] = '25px',
                     ['z-index'] = 550,
                     ['font-size'] = '24px'
-                }
-        ):node(self.abilities_node or '')
+                }:node(self.abilities_node or '')
 
-        local card_weapon_type = mw.html.create('div'):css(
-                {
+        local card_weapon_type = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '10px',
                     ['left'] = '25px',
                     ['z-index'] = 500
-                }
-        ):addClass(format('card-viewer-layer-%s', string.lower(self.factionLeft or 'blank'))):wikitext(self.weapon_type_wktxt or ''):done()
+                }:addClass(format('card-viewer-layer-%s', string.lower(self.factionLeft or 'blank'))):wikitext(self.weapon_type_wktxt or ''):done()
 
-        local card_damage = mw.html.create('div'):addClass('cv-damage'):attr('data-damage', self.data_damage_attr or ''):css(
-                {
+        local card_damage = mw.html.create('div'):addClass('cv-damage'):attr('data-damage', self.data_damage_attr or ''):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '19px',
                     ['left'] = '75px',
                     ['z-index'] = 500
-                }
-        ):wikitext(self.damage_wktxt or ''):done()
+                }:wikitext(self.damage_wktxt or ''):done()
 
-        local card_size_class = mw.html.create('div'):css(
-                {
+        local card_size_class = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '7px',
                     ['left'] = '150px',
                     ['z-index'] = 500
-                }
-        ):addClass('card-viewer-unit-size')
+                }:addClass('card-viewer-unit-size')
         if self.unit_size_wktxt or self.health_wktxt then
             card_size_class:addClass(format('card-viewer-layer-%s', string.lower(self.factionRight or 'blank')))
                            :wikitext(format('[[File:Card_Icon_HP.png||link=%s]]', self.displayName or ''))
                            :wikitext(self.unit_size_wktxt or '')
         end
 
-        local card_health = mw.html.create('div'):addClass('cv-health'):attr('data-health', self.data_health_attr or ''):css(
-                {
+        local card_health = mw.html.create('div'):addClass('cv-health'):attr('data-health', self.data_health_attr or ''):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '19px',
                     ['left'] = '225px',
                     ['z-index'] = 500
-                }
-        ):wikitext(self.health_wktxt or ''):done()
+                }:wikitext(self.health_wktxt or ''):done()
 
-        local card_edition_icon = mw.html.create('div'):css(
-                {
+        local card_edition_icon = mw.html.create('div'):css{
                     ['position'] = 'absolute',
                     ['bottom'] = '5px',
                     ['right'] = '5px',
                     ['z-index'] = 600
-                }
-        ):wikitext(self.edition_icon_wktxt or '')
+                }:wikitext(self.edition_icon_wktxt or '')
 
         card_container
                 :node(card_artwork):node(card_background):node(upgradeLeft):node(upgradeRight):node(card_name)
@@ -447,13 +381,11 @@ local function CardClass(init)
                 :node(card_weapon_type):node(card_damage):node(card_size_class):node(card_health):node(card_edition_icon)
                 :done()
 
-        return mw.html.create('div'):css(
-                {
+        return mw.html.create('div'):css{
                     ['width'] = format('%spx', 370 * self.scaling),
                     ['height'] = format('%spx', 510 * self.scaling),
                     ['display'] = 'inline-block'
-                }
-        ):tag('div'):cssText('display:none'):wikitext(self.displayName or ''):done():node(card_container):allDone()
+                }:tag('div'):cssText('display:none'):wikitext(self.displayName or ''):done():node(card_container):allDone()
     end
 
     return self
@@ -481,10 +413,10 @@ function CardData.card(frame)
     local args = getArgs(frame)
 
     if not get.exists(args.name or args[1]) then
-        return mw.html.create('div'):css({
+        return mw.html.create('div'):css{
             width = format('%spx', 370 * (args.scaling or args.displayscaling or 0.74)),
             height = format('%spx', 510 * (args.scaling or args.displayscaling or 0.74))
-        }):wikitext(format('Error: Card "%s" not found', args.name or args[1]))
+        }:wikitext(format('Error: Card "%s" not found', args.name or args[1]))
     end
 
     local data = get.card(args.name or args[1])
@@ -815,24 +747,20 @@ function CardData.deck(frame)
         if t[1] ~= '' then
             if args.icononly then
                 res:node(
-                        icon(
-                                {
+                        icon{
                                     t[1],
                                     size = format('%spx', (args.scaling or args.displayscaling or 1) * 80),
                                     icononly = true
                                 }
-                        )
                 )
             else
                 res:node(
-                        CardData.card(
-                                {
+                        CardData.card{
                                     t[1],
                                     cardupgrade = tonumber(t[2] or 0),
                                     applied_charges = tonumber(t[3] or 0),
                                     scaling = args.scaling or args.displayscaling or '0.23'
                                 }
-                        )
                 )
             end
         end
@@ -947,20 +875,16 @@ function CardData.icon(frame)
     end
 
     local span =
-    mw.html.create('span'):addClass('card-icon'):attr('data-card', args[1]):tag('span'):css(
-            {
+    mw.html.create('span'):addClass('card-icon'):attr('data-card', args[1]):tag('span'):css{
                 position = 'relative',
                 display = 'inline-block',
                 ['line-height'] = 0
-            }
-    ):wikitext(format('[[File:%s%s_Card_Icon.png|%spx|border|link=%s]]', name, firstfile, size, linkdest)):tag('span'):css(
-            {
+            }:wikitext(format('[[File:%s%s_Card_Icon.png|%spx|border|link=%s]]', name, firstfile, size, linkdest)):tag('span'):css{
                 position = 'absolute',
                 right = 0,
                 bottom = 0,
                 ['z-index'] = 1000
-            }
-    ):wikitext(
+            }:wikitext(
             aff and format('[[File:Affinity_Orb_%s.png|%spx|link=%s]]', var, math.floor(size * 0.4 + 0.5), linkdest) or
                     (name == 'Grinder' and
                             format('[[File:Affinity_Orb_Shadow.png|%spx|link=Grinder]]', math.floor(size * 0.4 + 0.5)) or
@@ -1055,7 +979,7 @@ function CardData.map_drops(frame)
     if args[3] == 'list' then
         local res2 = mw.html.create('ul')
         for i=1, #res do
-            res2:tag('li'):node(icon({res[i]})):done()
+            res2:tag('li'):node(icon{res[i]}):done()
         end
         return res2
     elseif args[3] == 'count' then
@@ -1145,61 +1069,61 @@ function CardData.tooltip(frame)
     local tooltip = mw.html.create('div'):cssText('display:flex;')
 
     if get.card(name) then
-        tooltip:wikitext(tostring(CardData.card({
+        tooltip:wikitext(tostring(CardData.card{
             name,
             ['cardupgrade'] = 0,
             ['applied_charges'] = 0
         }, {
             ['notooltip'] = true,
             ['nolink'] = true
-        })))
+        }))
     end
     if get.card(name..' (Fire)') then
-        tooltip:wikitext(tostring(CardData.card({
+        tooltip:wikitext(tostring(CardData.card{
             name..' (Fire)',
             ['cardupgrade'] = 0,
             ['applied_charges'] = 0
         }, {
             ['notooltip'] = true,
             ['nolink'] = true
-        })))
+        }))
     end
     if get.card(name..' (Frost)') then
-        tooltip:wikitext(tostring(CardData.card({
+        tooltip:wikitext(tostring(CardData.card{
             name..' (Frost)',
             ['cardupgrade'] = 0,
             ['applied_charges'] = 0
         }, {
             ['notooltip'] = true,
             ['nolink'] = true
-        })))
+        }))
     end
     if get.card(name..' (Nature)') then
-        tooltip:wikitext(tostring(CardData.card({
+        tooltip:wikitext(tostring(CardData.card{
             name..' (Nature)',
             ['cardupgrade'] = 0,
             ['applied_charges'] = 0
         }, {
             ['notooltip'] = true,
             ['nolink'] = true
-        })))
+        }))
     end
     if get.card(name..' (Shadow)') then
-        tooltip:wikitext(tostring(CardData.card({
+        tooltip:wikitext(tostring(CardData.card{
             name..' (Shadow)',
             ['cardupgrade'] = 0,
             ['applied_charges'] = 0
         }, {
             ['notooltip'] = true,
             ['nolink'] = true
-        })))
+        }))
     end
     if get.card(name..' (Promo)') then
-        tooltip:wikitext(tostring(CardData.card({
+        tooltip:wikitext(tostring(CardData.card{
             name..' (Promo)' }, {
             ['notooltip'] = true,
             ['nolink'] = true
-        })))
+        }))
     end
 
     return tooltip:allDone()
