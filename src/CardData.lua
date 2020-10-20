@@ -8,11 +8,11 @@ local has = require("Module:CardData/has")
 ---@param t table table to concat
 ---@return string
 ---@protected
-local function concat(t)
+local function concat(t, sep)
     if type(t) ~= 'table' then
         return t
     end
-    return table.concat(t)
+    return table.concat(t, sep or ',')
 end
 
 local function CardClass(init)
