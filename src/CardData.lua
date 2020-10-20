@@ -5,6 +5,16 @@ local CardData = {}
 local get = require("Module:CardData/get")
 local has = require("Module:CardData/has")
 
+---@param t table table to concat
+---@return string
+---@protected
+local function concat(t)
+    if type(t) ~= 'table' then
+        return t
+    end
+    return table.concat(t)
+end
+
 local function CardClass(init)
     local self = {
         scaling = 0.74,
@@ -583,7 +593,7 @@ function CardData.card(frame)
     card.orb_2_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[2], link)
     card.orb_3_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[3], link)
     card.orb_4_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[4], link)
-    card.data_cost_attr = string.format('["%s"]', table.concat(data["power_cost"], '","'))
+    card.data_cost_attr = string.format('["%s"]', concat(data["power_cost"], '","'))
     card.power_cost_wktxt = type(data["power_cost"]) == "table"
             and data["power_cost"][cardupgrade + 1]
             or data["power_cost"]
@@ -598,7 +608,7 @@ function CardData.card(frame)
         actualCurrentCharge = (actualCurrentCharge or 0) + actualChargeRule[i+1] or 0
     end
     card.charges_wktxt = data['custom_charges'] or actualCurrentCharge
-    card.data_charges_attr = string.format('["%s"]', table.concat(actualChargeRule or {}, '","'))
+    card.data_charges_attr = string.format('["%s"]', concat(actualChargeRule or {}, '","'))
     card.squadsize = data["squadsize"]
     card.class = data["class"]
     card.weapon_type_wktxt = (data["weapon_type"] and data["damage"] and data["type"] ~= "Spell") and string.format(
@@ -852,13 +862,13 @@ function CardData.get(frame)
         if not type(returnval) == "table" then
             return string.format("Value %s not an array (lua table)", val)
         end
-        return table.concat(returnval, "; ")
+        return concat(returnval, "; ")
     elseif type(returntype) == "number" and returntype == math.floor(returntype) and returntype < 10 then
         return returnval[tonumber(returntype)]
     else
         -- Something's not workin' here
         if type(returnval) == "table" then
-            return table.concat(returnval, "; ")
+            return concat(returnval, "; ")
         elseif type(returnval) == "string" or type(returnval) == "number" or type(returnval) == "boolean" then
             return returnval
         else
@@ -968,7 +978,7 @@ function CardData.infobox(frame)
             affinity1    = has.affinities(args[1]) and get.affinity_variants(args[1])[1] or nil,
             affinity2    = has.affinities(args[1]) and get.affinity_variants(args[1])[2] or nil,
             power_cost   = type(get.power_cost(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.power_cost(vname)[1], get.power_cost(vname)[2], get.power_cost(vname)[3], get.power_cost(vname)[4]}} or nil,
-            orbs         = get.orbs(vname) and table.concat(get.orbs(vname), ", ") or nil,
+            orbs         = get.orbs(vname) and concat(get.orbs(vname), ", ") or nil,
             charges      = has.nonpromo(vname) and frame:expandTemplate{title = 'pc', args={get.charges(vname)}} or get.charges(vname),
             squadsize    = get.squadsize(vname) and get.squadsize(vname) or nil,
 
@@ -976,7 +986,7 @@ function CardData.infobox(frame)
             damage       = type(get.damage(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.damage(vname)[1], get.damage(vname)[2], get.damage(vname)[3], get.damage(vname)[4]}} or get.damage(vname),
             size         = get.size(vname) and get.size(vname) or nil,
             health       = type(get.health(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.health(vname)[1], get.health(vname)[2], get.health(vname)[3], get.health(vname)[4]}} or get.health(vname),
-            abilities    = table.concat(abils, ""),
+            abilities    = concat(abils, ""),
             edition      = get.edition(vname) or nil,
             rarity       = get.rarity(vname) or nil
         }
@@ -1035,7 +1045,7 @@ function CardData.map_drops(frame)
     elseif args[3] == "count" then
         return #res
     else
-        return table.concat(res, ";")
+        return concat(res, ";")
     end
 end
 
@@ -1058,9 +1068,9 @@ function CardData.navigation()
                 :attr('data-search', name)
                 :attr('data-faction', get.faction(v))
                 :attr('data-special', has.promo(name) and 'Promo' or (get.starter_card(v) and 'Starter' or ''))
-                :attr('data-orbs', table.concat(orbs, ','))
+                :attr('data-orbs', concat(orbs, ','))
                 :attr('data-orbsamount', #orbs)
-                :attr('data-affinities', table.concat(get.affinity_variants(name) or {}, ','))
+                :attr('data-affinities', concat(get.affinity_variants(name) or {}, ','))
                 :attr('data-size', get.size(v))
                 :attr('data-type', get.type(v))
                 :wikitext(string.format('[[File:%s_Card_Icon.png|56px|alt=%s|link=%s]]', name, name, name))
