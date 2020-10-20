@@ -589,10 +589,10 @@ function CardData.card(frame)
     card.tokenslot_wktxt = data['orbs'] and string.format("[[File:Tokenslot_Overlay_%s.png||link=%s]]" or nil, factionLR, link)
     card.tokenslot_affinity_wktxt = aff and string.format("[[File:Affinity_Tokenslot_Overlay_Blank.png||link=%s]]", link) or nil
     local dataorbs = data['orbs'] or {}
-    card.orb_1_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[1], link)
-    card.orb_2_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[2], link)
-    card.orb_3_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[3], link)
-    card.orb_4_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[4], link)
+    card.orb_1_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[1] or '', link)
+    card.orb_2_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[2] or '', link)
+    card.orb_3_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[3] or '', link)
+    card.orb_4_wktxt = string.format("[[File:Tokenslot_Orb_%s.png||link=%s]]", dataorbs[4] or '', link)
     card.data_cost_attr = string.format('["%s"]', concat(data["power_cost"], '","'))
     card.power_cost_wktxt = type(data["power_cost"]) == "table"
             and data["power_cost"][cardupgrade + 1]
