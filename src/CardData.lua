@@ -530,10 +530,21 @@ end
 
 -- TODO: Upgrade Cards
 --- returns html for a card to display
----@param args table arguments from @getArgs
+---@param frame table mw.frame object
 ---@return string card as mw.html
----@protected
-local function _card(data, args)
+---@public
+function CardData.card(frame)
+    local args = getArgs(frame)
+
+    if not get.exists(args["name"] or args[1]) then
+        return mw.html.create("div"):css({
+            width = format("%spx", 370 * (args["scaling"] or args["displayscaling"] or 0.74)),
+            height = format("%spx", 510 * (args["scaling"] or args["displayscaling"] or 0.74))
+        }):wikitext(format("Error: Card '%s' not found", args["name"] or args[1]))
+    end
+
+    local card = get.card(args["name"] or args[1])
+
     local card = CardClass()
     local charge_rules = chargeRules()
     local name = args["name"] or args[1] or "Name missing"
@@ -688,356 +699,6 @@ local function _card(data, args)
     return card.build()
 end
 
---- returns html for the tooltip template
----@param args table arguments from @getArgs
----@return string tooltip content as mw.html
----@protected
-local function _tooltip(args)
-    local name = args[1]--verifyName(args[1])
-    local tooltip = mw.html.create("div"):cssText("display:flex;")
-
-    if get["card"](name) then
-        tooltip:wikitext(tostring(CardData.card({
-            name,
-            ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
-        }, {
-            ["no-tt"] = true,
-            ["nolink"] = true
-        })))
-    end
-    if get["card"](name.." (Fire)") then
-        tooltip:wikitext(tostring(CardData.card({
-            name.." (Fire)",
-            ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
-        }, {
-            ["no-tt"] = true,
-            ["nolink"] = true
-        })))
-    end
-    if get["card"](name.." (Frost)") then
-        tooltip:wikitext(tostring(CardData.card({
-            name.." (Frost)",
-            ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
-        }, {
-            ["no-tt"] = true,
-            ["nolink"] = true
-        })))
-    end
-    if get["card"](name.." (Nature)") then
-        tooltip:wikitext(tostring(CardData.card({
-            name.." (Nature)",
-            ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
-        }, {
-            ["no-tt"] = true,
-            ["nolink"] = true
-        })))
-    end
-    if get["card"](name.." (Shadow)") then
-        tooltip:wikitext(tostring(CardData.card({
-            name.." (Shadow)",
-            ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
-        }, {
-            ["no-tt"] = true,
-            ["nolink"] = true
-        })))
-    end
-    if get["card"](name.." (Promo)") then
-        tooltip:wikitext(tostring(CardData.card({
-            name.." (Promo)" }, {
-            ["no-tt"] = true,
-            ["nolink"] = true
-        })))
-    end
-
-    return tooltip:allDone()
-end
-
---- returns a filtered list of cards
----@param args table arguments from @getArgs
----@return string list of cards as mw.html
----@protected
-local function _list(args)
-    local list = get.list()
-    local div = args['ci'] == true and mw.html.create()
-            or mw.html.create("div"):addClass("list-of-all-cards"):css{
-        ["display"] = "flex",
-        ["flex-wrap"] = "wrap",
-        ["justify-content"] = "center"
-    }
-
-    if args[1] ~= "" and args[2] ~= "" and args[1] ~= "cardtype" then
-        for _,k in ipairs(list) do
-            if get[args[1]](k) == args[2] then
-                if args['ci'] == true then
-                    div:wikitext('\n* '):node(CardData.icon{k})
-                else
-                    div:tag("div"):node(CardData.card{k})
-                end
-            end
-        end
-    else
-        if (args[1] == "cardtype" and args[2] == "cards") or args[1] == nil or args[1] == "" then
-            for _,k in ipairs(list) do
-                if k:find "Northstar" then break end
-                if not k:find "(Promo)" then div:tag("div"):node(CardData.card{k}) end
-            end
-        elseif (args[1] == "cardtype" and args[2] == "promos") or args[1] == nil or args[1] == "" then
-            for _,k in ipairs(list) do
-                if k:find "(Promo)" then div:tag("div"):node(CardData.card{k}) end
-            end
-        end
-    end
-    return div:done()
-end
-
---- returns the content for Template:Card_icon
----@param args table arguments from @getArgs
----@return string icon_text or icon as mw.html
----@protected
-local function _icon(args)
-    local n, v = string.find(args[1], " (", 1, true)
-    local name, _ = (n == nil and args[1] or string.sub(args[1], 1, (n or 0) - 1)), nil
-    local var, _ = string.gsub(string.sub(args[1], (v or 0) + 1), "%)", "")
-
-    local firstfile = ""
-    if var == "Promo" then
-        firstfile = "_(Promo)"
-    elseif var == "Twilight" then
-        firstfile = "_(Twilight)"
-    elseif var == "Lost Souls" then
-        firstfile = "_(Lost_Souls)"
-    elseif var == "Superpig" then
-        firstfile = "_(Superpig)"
-    end
-    local linkdest = name == "Mo" and "Mo#Card" or (var ~= "Promo" and format("%s%s", name, firstfile) or name)
-
-    local size = math.floor(string.gsub(args["size"] or "20px", "px", "") + 0.5)
-
-    local aff = false
-    if var == "Fire" or var == "Frost" or var == "Nature" or var == "Shadow" then
-        aff = true
-    end
-
-    local linktext = name
-    if args[2] ~= nil and args[2] ~= "" then
-        linktext = args[2]
-    elseif var ~= name then
-        linktext = format("%s (%s)", linktext, var)
-    end
-
-    local span =
-    mw.html.create("span"):addClass("card-icon"):attr("data-card", args[1]):tag("span"):css(
-            {
-                position = "relative",
-                display = "inline-block",
-                ["line-height"] = 0
-            }
-    ):wikitext(format("[[File:%s%s_Card_Icon.png|%spx|border|link=%s]]", name, firstfile, size, linkdest)):tag("span"):css(
-            {
-                position = "absolute",
-                right = 0,
-                bottom = 0,
-                ["z-index"] = 1000
-            }
-    ):wikitext(
-            aff and format("[[File:Affinity_Orb_%s.png|%spx|link=%s]]", var, math.floor(size * 0.4 + 0.5), linkdest) or
-                    (name == "Grinder" and
-                            format("[[File:Affinity_Orb_Shadow.png|%spx|link=Grinder]]", math.floor(size * 0.4 + 0.5)) or
-                            "")
-    ):done():done()
-    if not args["icononly"] then
-        span:wikitext(format(" [[%s|%s]]", linkdest, linktext))
-    end
-
-    return span
-end
-
---- returns a list of cards formatted as a deck display
----@param args table arguments from @getArgs
----@return string deck as mw.html
----@protected
-local function _deck(args)
-    local res = mw.html.create("div"):cssText("display:flex;flex-wrap:wrap;")
-    if args["maxperrow"] then
-        res:cssText(
-                format(
-                        "max-width:100%%;width:calc(%spx * %s);",
-                        args["icononly"] and 82 * (tonumber(args["scaling"]) or tonumber(args["displayscaling"]) or 1) or 370 * (tonumber(args["scaling"]) or tonumber(args["displayscaling"]) or 0.23),
-                        args["maxperrow"]
-                )
-        )
-    end
-    for i = 1, 20 do
-        local t = mw.text.split(args[i] or "", ";", true)
-        if t[1] ~= "" then
-            if args["icononly"] then
-                res:node(
-                        _icon(
-                                {
-                                    t[1],
-                                    size = format("%spx", (args["scaling"] or args["displayscaling"] or 1) * 80),
-                                    icononly = true
-                                }
-                        )
-                )
-            else
-                res:node(
-                        CardData.card(
-                                {
-                                    t[1],
-                                    cardupgrade = tonumber(t[2] or 0),
-                                    chargeupgrade = tonumber(t[3] or 0),
-                                    scaling = args["scaling"] or args["displayscaling"] or "0.23"
-                                }
-                        )
-                )
-            end
-        end
-    end
-
-    return res
-end
-
-local function _infobox(args, frame)
-    local vname, _, _ = get.verified_name(args[1])
-    local abils = {}
-    for k,v in pairs(get.abilities_all(args[1])) do
-        abils[k] = '<div>' .. frame:expandTemplate{title='ai', args={ v["name"] , args[1]..(has.nonpromo(args[1]) and '' or ' (Promo)'), link=args[1] }} .. '</div>'
-    end
-    return frame:expandTemplate{
-        title = 'Infobox card',
-        args = {
-            name         = args[1],
-            artwork      = format('[[File:%s_Card_Artwork.png|link=]]', args[1]),
-            card_type    = get.type(vname) or nil,
-            faction      = get.faction(vname) == 'Neutral' and 'None (Neutral / Legendary)' or get.faction(vname),
-            class        = get.class(vname) or nil,
-            has_normal   = has.normal(args[1]) or nil,
-            has_promo    = has.promo(args[1]) or nil,
-            affinity1    = has.affinities(args[1]) and get.affinity_variants(args[1])[1] or nil,
-            affinity2    = has.affinities(args[1]) and get.affinity_variants(args[1])[2] or nil,
-            power_cost   = type(get.power_cost(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.power_cost(vname)[1], get.power_cost(vname)[2], get.power_cost(vname)[3], get.power_cost(vname)[4]}} or nil,
-            orbs         = get.orbs(vname) and concat(get.orbs(vname), ", ") or nil,
-            charges      = has.nonpromo(vname) and frame:expandTemplate{title = 'pc', args={get.charges(vname)}} or get.charges(vname),
-            squadsize    = get.squadsize(vname) and get.squadsize(vname) or nil,
-
-            damage_bonus = get.counter(vname) and get.counter(vname) or nil,
-            damage       = type(get.damage(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.damage(vname)[1], get.damage(vname)[2], get.damage(vname)[3], get.damage(vname)[4]}} or get.damage(vname),
-            size         = get.size(vname) and get.size(vname) or nil,
-            health       = type(get.health(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.health(vname)[1], get.health(vname)[2], get.health(vname)[3], get.health(vname)[4]}} or get.health(vname),
-            abilities    = table.concat(abils, ""),
-            edition      = get.edition(vname) or nil,
-            rarity       = get.rarity(vname) or nil
-        }
-    }
-end
-
--- TODO: Abilities & Upgrades
---- returns values from CardData/data for a card
----@param args table arguments from @getArgs
----@return string value from card
----@protected
-local function _get(args)
-    local cardname = (args[2]:find("affini")) and args[1] or get.verified_name(args[1])
-    local val = args[2]
-    local returntype = args[3]
-    -- "return" one of: array, count, 'index' (eg 1).
-    -- nil returns default (tables as array (wikitext-string separated by ';'), single value as single value)
-
-    if not get[val] then
-        return format("No getter for %s", val)
-    end
-
-    -- if not get["card"](cardname) then return format("Card %s not found (fn 'get')", cardname) end
-    --if not get[val](cardname, cardtype) then return format('Value %s not found for %s (%s)', val, cardname, get[val](cardname, cardtype)) end
-
-    local returnval = cardname == "list" and get.list() or get[val](cardname)
-
-    if returnval == nil then
-        return format("Card %s or value %s not found (fn 'get')", cardname, val)
-    end
-
-    if returntype == "count" then
-        local i = 0
-        for _ in pairs(returnval or {}) do
-            i = i + 1
-        end
-        return i
-    elseif returntype == "array" then
-        if not type(returnval) == "table" then
-            return format("Value %s not an array (lua table)", val)
-        end
-        return concat(returnval, "; ")
-    elseif type(returntype) == "number" and returntype == math.floor(returntype) and returntype < 10 then
-        return returnval[tonumber(returntype)]
-    else
-        -- Something's not workin' here
-        if type(returnval) == "table" then
-            return concat(returnval, "; ")
-        elseif type(returnval) == "string" or type(returnval) == "number" or type(returnval) == "boolean" then
-            return returnval
-        else
-            return "Something went wrong. Check: card, value, return and Module:CardData/data"
-        end
-    end
-end
-
---- check if card has value
----@param args table arguments from @getArgs
----@return boolean true if carddata/data contains value for card
----@protected
-local function _has(args)
-    if has[args[2]] and has[args[2]](args[1]) then
-        return true
-    end
-    local cardname = args[2]:find("affini") and args[1] or get.verified_name(args[1])
-    if get[args[2]] and get[args[2]](cardname) then
-        return true
-    else
-        return false
-    end
-end
-
-
-function CardData.progression_charges(frame)
-    local args = getArgs(frame)
-    if not args["index"] and not args[1] then return "Missing max charge value" end
-    local rule = chargeRules(tonumber(args["index"] or args[1]))
-    if not rule then return "Value "..(args["index"] or args[1]).." not found in ruleset"  end
-    return frame:expandTemplate{title = 'p', args = {
-        [1] = rule[1],
-        [2] = "No extra charges applied",
-        [3] = rule[1] + rule[2],
-        [4] = "1 extra charge applied",
-        [5] = rule[1] + rule[2] + rule[3],
-        [6] = "2 extra charges applied",
-        [7] = rule[1] + rule[2] + rule[3] + rule[4],
-        [8] = "3 extra charges applied",
-        texttip = "true"
-    }}
-end
-
--- TODO: documentation for public functions
-function CardData.card(frame)
-    local args = getArgs(frame)
-
-    if not get.exists(args["name"] or args[1]) then
-        return mw.html.create("div"):css({
-            width = format("%spx", 370 * (args["scaling"] or args["displayscaling"] or 0.74)),
-            height = format("%spx", 510 * (args["scaling"] or args["displayscaling"] or 0.74))
-        }):wikitext(format("Error: Card '%s' not found", args["name"] or args[1]))
-    end
-
-    local card = get.card(args["name"] or args[1])
-
-    return _card(card, args)
-end
-
 function CardData.custom_card(frame)
     local args = getArgs(frame)
 
@@ -1144,28 +805,196 @@ function CardData.custom_card(frame)
     })
 end
 
-function CardData.tooltip(frame)
+--- returns a list of cards formatted as a deck display
+---@param frame table mw.frame object
+---@return string deck as mw.html
+---@public
+function CardData.deck(frame)
     local args = getArgs(frame)
     if not args then
         return "Error (missing args): Check your input"
     end
-    return _tooltip(args)
+
+    local res = mw.html.create("div"):cssText("display:flex;flex-wrap:wrap;")
+    if args["maxperrow"] then
+        res:cssText(
+                format(
+                        "max-width:100%%;width:calc(%spx * %s);",
+                        args["icononly"] and 82 * (tonumber(args["scaling"]) or tonumber(args["displayscaling"]) or 1) or 370 * (tonumber(args["scaling"]) or tonumber(args["displayscaling"]) or 0.23),
+                        args["maxperrow"]
+                )
+        )
+    end
+    for i = 1, 20 do
+        local t = mw.text.split(args[i] or "", ";", true)
+        if t[1] ~= "" then
+            if args["icononly"] then
+                res:node(
+                        icon(
+                                {
+                                    t[1],
+                                    size = format("%spx", (args["scaling"] or args["displayscaling"] or 1) * 80),
+                                    icononly = true
+                                }
+                        )
+                )
+            else
+                res:node(
+                        CardData.card(
+                                {
+                                    t[1],
+                                    cardupgrade = tonumber(t[2] or 0),
+                                    chargeupgrade = tonumber(t[3] or 0),
+                                    scaling = args["scaling"] or args["displayscaling"] or "0.23"
+                                }
+                        )
+                )
+            end
+        end
+    end
+
+    return res
 end
 
-function CardData.list(frame)
+-- TODO: Abilities & Upgrades
+--- returns values from CardData/data for a card
+---@param frame table mw.frame object
+---@return string value from card
+---@public
+function CardData.get(frame)
     local args = getArgs(frame)
     if not args then
         return "Error (missing args): Check your input"
     end
-    return _list(args)
+
+    local cardname = (args[2]:find("affini")) and args[1] or get.verified_name(args[1])
+    local val = args[2]
+    local returntype = args[3]
+    -- "return" one of: array, count, 'index' (eg 1).
+    -- nil returns default (tables as array (wikitext-string separated by ';'), single value as single value)
+
+    if not get[val] then
+        return format("No getter for %s", val)
+    end
+
+    -- if not get["card"](cardname) then return format("Card %s not found (fn 'get')", cardname) end
+    --if not get[val](cardname, cardtype) then return format('Value %s not found for %s (%s)', val, cardname, get[val](cardname, cardtype)) end
+
+    local returnval = cardname == "list" and get.list() or get[val](cardname)
+
+    if returnval == nil then
+        return format("Card %s or value %s not found (fn 'get')", cardname, val)
+    end
+
+    if returntype == "count" then
+        local i = 0
+        for _ in pairs(returnval or {}) do
+            i = i + 1
+        end
+        return i
+    elseif returntype == "array" then
+        if not type(returnval) == "table" then
+            return format("Value %s not an array (lua table)", val)
+        end
+        return concat(returnval, "; ")
+    elseif type(returntype) == "number" and returntype == math.floor(returntype) and returntype < 10 then
+        return returnval[tonumber(returntype)]
+    else
+        -- Something's not workin' here
+        if type(returnval) == "table" then
+            return concat(returnval, "; ")
+        elseif type(returnval) == "string" or type(returnval) == "number" or type(returnval) == "boolean" then
+            return returnval
+        else
+            return "Something went wrong. Check: card, value, return and Module:CardData/data"
+        end
+    end
 end
 
+--- check if card has value
+---@param frame table mw.frame object
+---@return boolean true if carddata/data contains value for card; else nothing
+---@public
+function CardData.has(frame)
+    local args = getArgs(frame)
+    if not args then
+        return "Error (missing args): Check your input"
+    end
+
+    if has[args[2]] and has[args[2]](args[1]) then
+        return true
+    end
+    local cardname = args[2]:find("affini") and args[1] or get.verified_name(args[1])
+    if get[args[2]] and get[args[2]](cardname) then
+        return true
+    end
+end
+
+--- returns the content for Template:Card_icon
+---@param frame table mw.frame object
+---@return string icon_text or icon as mw.html
+---@public
 function CardData.icon(frame)
     local args = getArgs(frame)
     if not args then
         return "Error (missing args): Check your input"
     end
-    return _icon(args)
+
+    local n, v = string.find(args[1], " (", 1, true)
+    local name, _ = (n == nil and args[1] or string.sub(args[1], 1, (n or 0) - 1)), nil
+    local var, _ = string.gsub(string.sub(args[1], (v or 0) + 1), "%)", "")
+
+    local firstfile = ""
+    if var == "Promo" then
+        firstfile = "_(Promo)"
+    elseif var == "Twilight" then
+        firstfile = "_(Twilight)"
+    elseif var == "Lost Souls" then
+        firstfile = "_(Lost_Souls)"
+    elseif var == "Superpig" then
+        firstfile = "_(Superpig)"
+    end
+    local linkdest = name == "Mo" and "Mo#Card" or (var ~= "Promo" and format("%s%s", name, firstfile) or name)
+
+    local size = math.floor(string.gsub(args["size"] or "20px", "px", "") + 0.5)
+
+    local aff = false
+    if var == "Fire" or var == "Frost" or var == "Nature" or var == "Shadow" then
+        aff = true
+    end
+
+    local linktext = name
+    if args[2] ~= nil and args[2] ~= "" then
+        linktext = args[2]
+    elseif var ~= name then
+        linktext = format("%s (%s)", linktext, var)
+    end
+
+    local span =
+    mw.html.create("span"):addClass("card-icon"):attr("data-card", args[1]):tag("span"):css(
+            {
+                position = "relative",
+                display = "inline-block",
+                ["line-height"] = 0
+            }
+    ):wikitext(format("[[File:%s%s_Card_Icon.png|%spx|border|link=%s]]", name, firstfile, size, linkdest)):tag("span"):css(
+            {
+                position = "absolute",
+                right = 0,
+                bottom = 0,
+                ["z-index"] = 1000
+            }
+    ):wikitext(
+            aff and format("[[File:Affinity_Orb_%s.png|%spx|link=%s]]", var, math.floor(size * 0.4 + 0.5), linkdest) or
+                    (name == "Grinder" and
+                            format("[[File:Affinity_Orb_Shadow.png|%spx|link=Grinder]]", math.floor(size * 0.4 + 0.5)) or
+                            "")
+    ):done():done()
+    if not args["icononly"] then
+        span:wikitext(format(" [[%s|%s]]", linkdest, linktext))
+    end
+
+    return span
 end
 
 function CardData.infobox(frame)
@@ -1173,34 +1002,81 @@ function CardData.infobox(frame)
     if not args then
         return "Error (missing args): Check your input"
     end
-    return _infobox(args, frame)
+
+    local vname, _, _ = get.verified_name(args[1])
+    local abils = {}
+    for k,v in pairs(get.abilities_all(args[1])) do
+        abils[k] = '<div>' .. frame:expandTemplate{title='ai', args={ v["name"] , args[1]..(has.nonpromo(args[1]) and '' or ' (Promo)'), link=args[1] }} .. '</div>'
+    end
+    return frame:expandTemplate{
+        title = 'Infobox card',
+        args = {
+            name         = args[1],
+            artwork      = format('[[File:%s_Card_Artwork.png|link=]]', args[1]),
+            card_type    = get.type(vname) or nil,
+            faction      = get.faction(vname) == 'Neutral' and 'None (Neutral / Legendary)' or get.faction(vname),
+            class        = get.class(vname) or nil,
+            has_normal   = has.normal(args[1]) or nil,
+            has_promo    = has.promo(args[1]) or nil,
+            affinity1    = has.affinities(args[1]) and get.affinity_variants(args[1])[1] or nil,
+            affinity2    = has.affinities(args[1]) and get.affinity_variants(args[1])[2] or nil,
+            power_cost   = type(get.power_cost(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.power_cost(vname)[1], get.power_cost(vname)[2], get.power_cost(vname)[3], get.power_cost(vname)[4]}} or nil,
+            orbs         = get.orbs(vname) and concat(get.orbs(vname), ", ") or nil,
+            charges      = has.nonpromo(vname) and frame:expandTemplate{title = 'pc', args={get.charges(vname)}} or get.charges(vname),
+            squadsize    = get.squadsize(vname) and get.squadsize(vname) or nil,
+
+            damage_bonus = get.counter(vname) and get.counter(vname) or nil,
+            damage       = type(get.damage(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.damage(vname)[1], get.damage(vname)[2], get.damage(vname)[3], get.damage(vname)[4]}} or get.damage(vname),
+            size         = get.size(vname) and get.size(vname) or nil,
+            health       = type(get.health(vname)) == 'table' and frame:expandTemplate{title = 'pu', args={get.health(vname)[1], get.health(vname)[2], get.health(vname)[3], get.health(vname)[4]}} or get.health(vname),
+            abilities    = table.concat(abils, ""),
+            edition      = get.edition(vname) or nil,
+            rarity       = get.rarity(vname) or nil
+        }
+    }
 end
 
-function CardData.deck(frame)
+--- returns a filtered list of cards
+---@param frame table mw.frame object
+---@return string list of cards as mw.html
+---@public
+function CardData.list(frame)
     local args = getArgs(frame)
     if not args then
         return "Error (missing args): Check your input"
     end
-    return _deck(args)
-end
 
-function CardData.get(frame)
-    local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
-    end
-    return _get(args)
-end
+    local list = get.list()
+    local div = args['ci'] == true and mw.html.create()
+            or mw.html.create("div"):addClass("list-of-all-cards"):css{
+        ["display"] = "flex",
+        ["flex-wrap"] = "wrap",
+        ["justify-content"] = "center"
+    }
 
---- returns true if true or nothing if false to be able to use #if instead of #ifeq
-function CardData.has(frame)
-    local args = getArgs(frame)
-    if not args then
-        return "Error (missing args): Check your input"
+    if args[1] ~= "" and args[2] ~= "" and args[1] ~= "cardtype" then
+        for _,k in ipairs(list) do
+            if get[args[1]](k) == args[2] then
+                if args['ci'] == true then
+                    div:wikitext('\n* '):node(CardData.icon{k})
+                else
+                    div:tag("div"):node(CardData.card{k})
+                end
+            end
+        end
+    else
+        if (args[1] == "cardtype" and args[2] == "cards") or args[1] == nil or args[1] == "" then
+            for _,k in ipairs(list) do
+                if k:find "Northstar" then break end
+                if not k:find "(Promo)" then div:tag("div"):node(CardData.card{k}) end
+            end
+        elseif (args[1] == "cardtype" and args[2] == "promos") or args[1] == nil or args[1] == "" then
+            for _,k in ipairs(list) do
+                if k:find "(Promo)" then div:tag("div"):node(CardData.card{k}) end
+            end
+        end
     end
-    if _has(args) then
-        return true
-    end
+    return div:done()
 end
 
 function CardData.map_drops(frame)
@@ -1210,7 +1086,7 @@ function CardData.map_drops(frame)
     if args[3] == "list" then
         local res2 = mw.html.create('ul')
         for i=1, #res do
-            res2:tag('li'):node(_icon({res[i]})):done()
+            res2:tag('li'):node(icon({res[i]})):done()
         end
         return res2
     elseif args[3] == "count" then
@@ -1269,6 +1145,98 @@ function CardData.navigation()
              :tag('div'):attr('id', 'grid-filter-type')
              :cssText('float: right; width: 100px; margin: 3px 0'):done()
              :node(grid):allDone()
+end
+
+function CardData.progression_charges(frame)
+    local args = getArgs(frame)
+    if not args["index"] and not args[1] then return "Missing max charge value" end
+    local rule = chargeRules(tonumber(args["index"] or args[1]))
+    if not rule then return "Value "..(args["index"] or args[1]).." not found in ruleset"  end
+    return frame:expandTemplate{title = 'p', args = {
+        [1] = rule[1],
+        [2] = "No extra charges applied",
+        [3] = rule[1] + rule[2],
+        [4] = "1 extra charge applied",
+        [5] = rule[1] + rule[2] + rule[3],
+        [6] = "2 extra charges applied",
+        [7] = rule[1] + rule[2] + rule[3] + rule[4],
+        [8] = "3 extra charges applied",
+        texttip = "true"
+    }}
+end
+
+--- returns html for the tooltip template
+---@param frame table mw.frame object
+---@return string tooltip content as mw.html
+---@public
+function CardData.tooltip(frame)
+    local args = getArgs(frame)
+    if not args then
+        return "Error (missing args): Check your input"
+    end
+
+    local name = args[1]--verifyName(args[1])
+    local tooltip = mw.html.create("div"):cssText("display:flex;")
+
+    if get["card"](name) then
+        tooltip:wikitext(tostring(CardData.card({
+            name,
+            ["cardupgrade"] = 0,
+            ["chargeupgrade"] = 0
+        }, {
+            ["no-tt"] = true,
+            ["nolink"] = true
+        })))
+    end
+    if get["card"](name.." (Fire)") then
+        tooltip:wikitext(tostring(CardData.card({
+            name.." (Fire)",
+            ["cardupgrade"] = 0,
+            ["chargeupgrade"] = 0
+        }, {
+            ["no-tt"] = true,
+            ["nolink"] = true
+        })))
+    end
+    if get["card"](name.." (Frost)") then
+        tooltip:wikitext(tostring(CardData.card({
+            name.." (Frost)",
+            ["cardupgrade"] = 0,
+            ["chargeupgrade"] = 0
+        }, {
+            ["no-tt"] = true,
+            ["nolink"] = true
+        })))
+    end
+    if get["card"](name.." (Nature)") then
+        tooltip:wikitext(tostring(CardData.card({
+            name.." (Nature)",
+            ["cardupgrade"] = 0,
+            ["chargeupgrade"] = 0
+        }, {
+            ["no-tt"] = true,
+            ["nolink"] = true
+        })))
+    end
+    if get["card"](name.." (Shadow)") then
+        tooltip:wikitext(tostring(CardData.card({
+            name.." (Shadow)",
+            ["cardupgrade"] = 0,
+            ["chargeupgrade"] = 0
+        }, {
+            ["no-tt"] = true,
+            ["nolink"] = true
+        })))
+    end
+    if get["card"](name.." (Promo)") then
+        tooltip:wikitext(tostring(CardData.card({
+            name.." (Promo)" }, {
+            ["no-tt"] = true,
+            ["nolink"] = true
+        })))
+    end
+
+    return tooltip:allDone()
 end
 
 return CardData
