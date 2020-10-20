@@ -19,7 +19,7 @@ end
 ---@return string
 ---@protected
 local function format(s, ...)
-    local ran, val_or_err = pcall(string.format(s, ...))
+    local ran, val_or_err = pcall(string.format(s, unpack(arg)))
     return ran and val_or_err or nil 
 end
 
@@ -524,7 +524,7 @@ function CardData.card(frame)
         return mw.html.create('div'):css({
             width = format('%spx', 370 * (args['scaling'] or args['displayscaling'] or 0.74)),
             height = format('%spx', 510 * (args['scaling'] or args['displayscaling'] or 0.74))
-        }):wikitext(format('Error: Card '%s' not found', args['name'] or args[1]))
+        }):wikitext(format('Error: Card "%s" not found', args['name'] or args[1]))
     end
 
     local data = get.card(args['name'] or args[1])
