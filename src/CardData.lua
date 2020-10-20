@@ -53,7 +53,7 @@ local function CardClass(init)
         background_wktxt = nil,
         spell_background_wktxt = nil,
         cardupgrade = 0,
-        chargeupgrade = 0,
+        applied_charges = 0,
         upgrade_left_1_wktxt = nil,
         upgrade_left_2_wktxt = nil,
         upgrade_left_3_wktxt = nil,
@@ -141,7 +141,7 @@ local function CardClass(init)
         card_background:done()
 
         self.cardupgrade = self.cardupgrade or 0
-        self.chargeupgrade = self.chargeupgrade or 0
+        self.applied_charges = self.applied_charges or 0
         local upgradeLeft = mw.html.create()
                               :tag("div"):addClass("cv-upgradeparts cv-U1"):css(
                 {
@@ -176,7 +176,7 @@ local function CardClass(init)
                     ["bottom"] = (self.factionLeft == "Neutral" and "232px" or "233px"),
                     ["left"] = (self.factionLeft == "Neutral" and "10px" or "4px"),
                     ["z-index"] = 200,
-                    ["display"] = ((self.chargeupgrade >= 1 and self.chargeupgrade <= self.cardupgrade) and "" or "none")
+                    ["display"] = ((self.applied_charges >= 1 and self.applied_charges <= self.cardupgrade) and "" or "none")
                 }
         ):wikitext(self.charge_left_1_wktxt or ""):done()
                               :tag("div"):addClass("cv-chargeparts cv-C2"):css(
@@ -185,7 +185,7 @@ local function CardClass(init)
                     ["bottom"] = (self.factionLeft == "Neutral" and "312px" or "304px"),
                     ["left"] = (self.factionLeft == "Neutral" and "10px" or "4px"),
                     ["z-index"] = 200,
-                    ["display"] = ((self.chargeupgrade >= 2 and self.chargeupgrade <= self.cardupgrade) and "" or "none")
+                    ["display"] = ((self.applied_charges >= 2 and self.applied_charges <= self.cardupgrade) and "" or "none")
                 }
         ):wikitext(self.charge_left_2_wktxt or ""):done()
                               :tag("div"):addClass("cv-chargeparts cv-C3"):css(
@@ -194,7 +194,7 @@ local function CardClass(init)
                     ["bottom"] = (self.factionLeft == "Neutral" and "394px" or "372px"),
                     ["left"] = (self.factionLeft == "Neutral" and "10px" or "4px"),
                     ["z-index"] = 200,
-                    ["display"] = ((self.chargeupgrade >= 3 and self.chargeupgrade <= self.cardupgrade) and "" or "none")
+                    ["display"] = ((self.applied_charges >= 3 and self.applied_charges <= self.cardupgrade) and "" or "none")
                 }
         ):wikitext(self.charge_left_3_wktxt or ""):done()
         if self.promo_icon_wktxt then
@@ -243,7 +243,7 @@ local function CardClass(init)
                     ["bottom"] = (self.factionRight == "Neutral" and "232px" or "221px"),
                     ["right"] = (self.factionRight == "Neutral" and "11px" or "2px"),
                     ["z-index"] = 200,
-                    ["display"] = ((self.chargeupgrade >= 1 and self.chargeupgrade <= self.cardupgrade) and "" or "none")
+                    ["display"] = ((self.applied_charges >= 1 and self.applied_charges <= self.cardupgrade) and "" or "none")
                 }
         ):wikitext(self.charge_right_1_wktxt or ""):done()
                                :tag("div"):addClass("cv-chargeparts cv-C2"):css(
@@ -252,7 +252,7 @@ local function CardClass(init)
                     ["bottom"] = (self.factionRight == "Neutral" and "312px" or "294px"),
                     ["right"] = (self.factionRight == "Neutral" and "11px" or "2px"),
                     ["z-index"] = 200,
-                    ["display"] = ((self.chargeupgrade >= 2 and self.chargeupgrade <= self.cardupgrade) and "" or "none")
+                    ["display"] = ((self.applied_charges >= 2 and self.applied_charges <= self.cardupgrade) and "" or "none")
                 }
         ):wikitext(self.charge_right_2_wktxt or ""):done()
                                :tag("div"):addClass("cv-chargeparts cv-C3"):css(
@@ -261,7 +261,7 @@ local function CardClass(init)
                     ["bottom"] = (self.factionRight == "Neutral" and "390px" or "362px"),
                     ["right"] = (self.factionRight == "Neutral" and "11px" or "1px"),
                     ["z-index"] = 200,
-                    ["display"] = ((self.chargeupgrade >= 3 and self.chargeupgrade <= self.cardupgrade) and "" or "none")
+                    ["display"] = ((self.applied_charges >= 3 and self.applied_charges <= self.cardupgrade) and "" or "none")
                 }
         ):wikitext(self.charge_right_3_wktxt or ""):done()
 
@@ -543,7 +543,7 @@ function CardData.card(frame)
         }):wikitext(format("Error: Card '%s' not found", args["name"] or args[1]))
     end
 
-    local card = get.card(args["name"] or args[1])
+    local data = get.card(args["name"] or args[1])
 
     local card = CardClass()
     local charge_rules = chargeRules()
@@ -574,15 +574,15 @@ function CardData.card(frame)
     card.factionLeft = factionLeft
     card.factionRight = factionRight
     card.affinity = aff
-    card.no_tt = args["no-tt"] or data["no-tt"] or false
+    card.notooltip = args["notooltip"] or data["notooltip"] or false
     card.scaling = scaling
     card.artwork_wktxt = format(data["artwork"] and format("[[File:%s||link=%s|320px]]", data["artwork"], link) or "[[File:%s%s_Card_Artwork.png||link=%s]]", displayName, promo and "_(Promo)" or "", link)
     card.background_wktxt = format("[[File:Faction_%s_Upgrade_0_Type_%s_Frame.png||link=%s]]", factionLR, data["type"] == "Upgrade" and "U" or "C", link)
     card.spell_background_wktxt = data["type"] == "Spell" and format("[[File:Spell_Card_Overlay_%s.png||link=%s]]", factionLR, link) or nil
     local cardupgrade = promo and 3 or (tonumber(data["cardupgrade"]) or tonumber(args["cardupgrade"]) or 0)
-    local chargeupgrade = promo and 3 or (tonumber(data["chargeupgrade"]) or tonumber(args["chargeupgrade"]) or 0)
+    local applied_charges = promo and 3 or (tonumber(data["applied_charges"]) or tonumber(args["applied_charges"]) or 0)
     card.cardupgrade = cardupgrade
-    card.chargeupgrade = chargeupgrade
+    card.applied_charges = applied_charges
     if promo and not data["temporary_card"] then
         card.promo_icon_wktxt = format("[[File:Promo_Icon_%s.png||link=%s]]", factionLeft, link)
     elseif data["starter_card"] then
@@ -632,7 +632,7 @@ function CardData.card(frame)
             or (charge_rules[data["charges"] or 4]) or charge_rules[4])
     )
     local actualCurrentCharge
-    for i=0, chargeupgrade do
+    for i=0, applied_charges do
         actualCurrentCharge = (actualCurrentCharge or 0) + actualChargeRule[i+1] or 0
     end
     card.charges_wktxt = data['custom_charges'] or actualCurrentCharge
@@ -761,7 +761,7 @@ function CardData.custom_card(frame)
 
     args['custom_charges'] = args['charges']
     args['charges'] = nil
-    args["chargeupgrade"] = args["applied_charges"]
+    args["applied_charges"] = args["applied_charges"]
 
     local abilities_done = mw.html.create()
     for i = 1, 5 do
@@ -798,7 +798,7 @@ function CardData.custom_card(frame)
     return _card(args, {
         args[1],
         ["name"] = args["name"],
-        ["no-tt"] = true,
+        ["notooltip"] = true,
         ["nolink"] = true,
         ["custom"] = true,
         ["scaling"] = tonumber(args["scaling"]) or tonumber(args["displayscaling"]) or 0.74
@@ -844,7 +844,7 @@ function CardData.deck(frame)
                                 {
                                     t[1],
                                     cardupgrade = tonumber(t[2] or 0),
-                                    chargeupgrade = tonumber(t[3] or 0),
+                                    applied_charges = tonumber(t[3] or 0),
                                     scaling = args["scaling"] or args["displayscaling"] or "0.23"
                                 }
                         )
@@ -1182,9 +1182,9 @@ function CardData.tooltip(frame)
         tooltip:wikitext(tostring(CardData.card({
             name,
             ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
+            ["applied_charges"] = 0
         }, {
-            ["no-tt"] = true,
+            ["notooltip"] = true,
             ["nolink"] = true
         })))
     end
@@ -1192,9 +1192,9 @@ function CardData.tooltip(frame)
         tooltip:wikitext(tostring(CardData.card({
             name.." (Fire)",
             ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
+            ["applied_charges"] = 0
         }, {
-            ["no-tt"] = true,
+            ["notooltip"] = true,
             ["nolink"] = true
         })))
     end
@@ -1202,9 +1202,9 @@ function CardData.tooltip(frame)
         tooltip:wikitext(tostring(CardData.card({
             name.." (Frost)",
             ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
+            ["applied_charges"] = 0
         }, {
-            ["no-tt"] = true,
+            ["notooltip"] = true,
             ["nolink"] = true
         })))
     end
@@ -1212,9 +1212,9 @@ function CardData.tooltip(frame)
         tooltip:wikitext(tostring(CardData.card({
             name.." (Nature)",
             ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
+            ["applied_charges"] = 0
         }, {
-            ["no-tt"] = true,
+            ["notooltip"] = true,
             ["nolink"] = true
         })))
     end
@@ -1222,16 +1222,16 @@ function CardData.tooltip(frame)
         tooltip:wikitext(tostring(CardData.card({
             name.." (Shadow)",
             ["cardupgrade"] = 0,
-            ["chargeupgrade"] = 0
+            ["applied_charges"] = 0
         }, {
-            ["no-tt"] = true,
+            ["notooltip"] = true,
             ["nolink"] = true
         })))
     end
     if get["card"](name.." (Promo)") then
         tooltip:wikitext(tostring(CardData.card({
             name.." (Promo)" }, {
-            ["no-tt"] = true,
+            ["notooltip"] = true,
             ["nolink"] = true
         })))
     end
