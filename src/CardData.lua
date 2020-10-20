@@ -594,11 +594,7 @@ function CardData.card(frame)
             or format("[[File:%s_Charge_2_Right.png||link=%s]]", factionRight, link)
     card.charge_right_3_wktxt = factionRight == "Neutral" and format("[[File:Neutral_Charge_All.png||link=%s]]", link)
             or format("[[File:%s_Charge_3_Right.png||link=%s]]", factionRight, link)
-    local actualDisplayName = displayName
-    actualDisplayName, _ = mw.ustring.gsub(actualDisplayName, " %(Lost Souls%)", "")
-    actualDisplayName, _ = mw.ustring.gsub(actualDisplayName, " %(Twilight%)", "")
-    actualDisplayName, _ = mw.ustring.gsub(actualDisplayName, " %(Superpig%)", "")
-    card.displayName = actualDisplayName
+    card.displayName = displayName:gsub(actualDisplayName, " %(Lost Souls%)", ""):gsub(actualDisplayName, " %(Twilight%)", ""):gsub(actualDisplayName, " %(Superpig%)", "")
     card.tokenslot_wktxt = data['orbs'] and format("[[File:Tokenslot_Overlay_%s.png||link=%s]]" or nil, factionLR, link)
     card.tokenslot_affinity_wktxt = aff and format("[[File:Affinity_Tokenslot_Overlay_Blank.png||link=%s]]", link) or nil
     local dataorbs = data['orbs'] or {}
