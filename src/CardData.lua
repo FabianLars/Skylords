@@ -626,10 +626,13 @@ function CardData.custom_card(frame)
     if type(args.upgrade) == 'string' then
         if args.upgrade:lower() == 'promo' then
             args.promo = true
+            args.cardupgrade = 3
+            args.applied_charges = 3
             promo_txt = format('[[File:Promo_Icon_%s.png||link=]]', factionLeft)
         end
         if args.upgrade:lower() == 'starter' then
             args.starter_card = true
+            args.cardupgrade = 0
             promo_class = 'cv-upgradeparts cv-A0'
             promo_txt = format('[[File:Starter_Icon_%s.png||link=]]', factionLeft)
         end
@@ -637,6 +640,8 @@ function CardData.custom_card(frame)
             or args.upgrade:lower() == 'temporary'
             or args.upgrade:lower() == 'tome' then
             args.temporary_card = true
+            args.cardupgrade = 3
+            args.applied_charges = 3
             promo_txt = format('[[File:Temporary_Icon_%s.png||link=]]', factionLeft)
         end
     else
@@ -674,45 +679,39 @@ function CardData.custom_card(frame)
     }
 
     return CardClass{
-        scaling = args.scaling,
-        affinity = affinity,
+        scaling = args.displayscaling or args.scaling,
+        affinity = args.affinity,
         factionLeft = factionLeft,
         factionRight = factionRight,
         display_name = name,
         artwork_wktxt = format('[[File:%s||link=|320px]]', args.artwork),
         background_wktxt = format('[[File:Faction_%s_Upgrade_0_Type_C_Frame.png||link=]]', factionLR),
         spell_background_wktxt = args.type == 'Spell' and format('[[File:Spell_Card_Overlay_%s.png||link=]]', factionLR) or nil,
-        cardupgrade = args.upgrade,
+        cardupgrade = args.cardupgrade,
         applied_charges = args.applied_charges,
         upgrade_left_1_wktxt = format('[[File:%s_Upgrade_1_Left.png||link=]]', factionLeft),
         upgrade_left_2_wktxt = format('[[File:%s_Upgrade_2_Left.png||link=]]', factionLeft),
         upgrade_left_3_wktxt = format('[[File:%s_Upgrade_3_Left.png||link=]]', factionLeft),
-        charge_left_1_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=]]')
-            or format('[[File:%s_Charge_1_Left.png||link=]]', factionLeft),
-        charge_left_2_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]')
-            or format('[[File:%s_Charge_2_Left.png||link=]]', factionLeft),
-        charge_left_3_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]')
-            or format('[[File:%s_Charge_3_Left.png||link=]]', factionLeft),
+        charge_left_1_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=]]') or format('[[File:%s_Charge_1_Left.png||link=]]', factionLeft),
+        charge_left_2_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]') or format('[[File:%s_Charge_2_Left.png||link=]]', factionLeft),
+        charge_left_3_wktxt = factionLeft == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]') or format('[[File:%s_Charge_3_Left.png||link=]]', factionLeft),
         upgrade_right_1_wktxt = format('[[File:%s_Upgrade_1_Right.png||link=]]', factionRight),
         upgrade_right_2_wktxt = format('[[File:%s_Upgrade_%s_Right.png||link=]]', factionRight, factionRight == 'Neutral' and '1' or '2'),
         upgrade_right_3_wktxt = format('[[File:%s_Upgrade_%s_Right.png||link=]]', factionRight, factionRight == 'Neutral' and '1' or '3'),
-        charge_right_1_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link)
-            or format('[[File:%s_Charge_1_Right.png||link=]]', factionRight),
-        charge_right_2_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link)
-            or format('[[File:%s_Charge_2_Right.png||link=]]', factionRight),
-        charge_right_3_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link)
-            or format('[[File:%s_Charge_3_Right.png||link=]]', factionRight),
+        charge_right_1_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link) or format('[[File:%s_Charge_1_Right.png||link=]]', factionRight),
+        charge_right_2_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link) or format('[[File:%s_Charge_2_Right.png||link=]]', factionRight),
+        charge_right_3_wktxt = factionRight == 'Neutral' and format('[[File:Neutral_Charge_All.png||link=%s]]', link) or format('[[File:%s_Charge_3_Right.png||link=]]', factionRight),
         promo_icon_wktxt = promo_txt,
         promo_icon_class = promo_class,
         tokenslot_wktxt = args.orbs and format('[[File:Tokenslot_Overlay_%s.png||link=]]', factionLR),
-        tokenslot_affinity_wktxt = aff and '[[File:Affinity_Tokenslot_Overlay_Blank.png||link=]]' or nil,
+        tokenslot_affinity_wktxt = args.affinity and '[[File:Affinity_Tokenslot_Overlay_Blank.png||link=]]' or nil,
         orb_1_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=]]', args.orbs and args.orbs[1] or nil),
         orb_2_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=]]', args.orbs and args.orbs[2] or nil),
         orb_3_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=]]', args.orbs and args.orbs[3] or nil),
         orb_4_wktxt = format('[[File:Tokenslot_Orb_%s.png||link=]]', args.orbs and args.orbs[4] or nil),
         power_cost_wktxt = args.power_cost,
         charges_wktxt = args.charges,
-        unit_size_wktxt = args.size,
+        unit_size_wktxt = check_size[args.size or 'Nope'] and format('[[File:Card_Icon_Unit_Size_%s.png||link=]]', args.size) or nil,
         squadsize = args.squadsize,
         class = args.class,
         damage_wktxt = args.damage,
